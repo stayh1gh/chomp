@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chomp task (board/tasks/<id>/task.yaml)",
+  "description": "One card on the board. Written only by board/store.mjs; agents never write it.",
+  "type": "object",
+  "required": ["id", "title", "prompt", "profile", "account", "column", "status", "steps", "sessions", "links", "created_at", "updated_at", "history"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "number": { "type": "integer", "description": "Board-wide sequence, never reused." },
+    "ref": { "type": "string", "description": "The card ID people see, e.g. AOS-12." },
+    "title": { "type": "string" },
+    "prompt": { "type": "string", "description": "The owner's request, verbatim." },
+    "redesign": { "type": "boolean", "description": "Redesigning an existing screen: the planner reads the current one first." },
+    "kind": { "enum": ["full", "design"], "description": "full goes through Development; design ends after Refinement. Missing means full." },
+    "library": { "type": "string", "description": "For a profile with figma.libraries: the id of the design system this task designs with." },
+    "figma_file": {
+      "type": "object",
+      "required": ["key", "url"],
+      "properties": { "key": { "type": "string" }, "url": { "type": "string" } },
+      "description": "The Figma file the owner gave for this task: its work file, overriding the profile's figma.work_file."
+    },
+    "profile": { "type": "string", "description": "profiles/<name>.yaml this task is bound to." },
+    "account": { "type": "string", "description": "Claude account the agents run as (claude-profiles directory, or default)." },
+    "column": { "type": "string", "description": "A column id from flow.yaml." },
+    "status": { "enum": ["queued", "working", "needs_input", "ready", "blocked", "idle", "paused"] },
+    "paused_from": { "type": "string", "description": "The status a paused card returns to on Start." },
+    "resume_pending": { "type": "boolean", "description": "Start resumes the interrupted session instead of starting fresh." },
+    "activity": { "type": ["string", "null"], "description": "What the agent is doing right now, while working." },
+    "steps": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "done"], "properties": { "name": { "type": "string" }, "done": { "type": "boolean" } } }
+    },
+    "blocker": {
+      "type": ["object", "null"],
+      "required": ["kind", "title"],
+      "properties": {
+        "kind": { "enum": ["connection", "missing_agent", "agent", "error"], "description": "connection/missing_agent recheck every minute; agent waits for a chat reply; error waits for Retry." },
+        "title": { "type": "string" },
+        "detail": { "type": "string" },
+        "needs": { "enum": ["figma_file"], "description": "What the owner can give the card from the board to unblock it." },
+        "at": { "type": "string" },
+        "checked_at": { "type": "string" }
+      }
+    },
+    "sessions": { "type": "object", "additionalProperties": { "type": "string" }, "description": "column id (or <column>:edit) → SDK session id, so chat replies resume the same agent." },
+    "links": { "type": "object", "additionalProperties": { "type": "string" } },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "history": {
+      "type": "array",
+      "items": { "type": "object", "required": ["at", "to", "by"], "properties": { "at": { "type": "string" }, "from": { "type": "string" }, "to": { "type": "string" }, "by": { "enum": ["you", "runner"] } } }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "agentos",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Portable multi-agent product design to frontend delivery system. See AGENTS.md.",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "bin": {
+    "agentos": "cli/agentos.mjs"
+  },
+  "scripts": {
+    "serve": "node harness/dashboard/serve.mjs",
+    "test": "node --test --test-reporter=spec board/*.test.mjs harness/**/*.test.mjs",
+    "test:web": "npm --prefix harness/dashboard/web test"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.290",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "js-yaml": "^5.3.0",
+    "playwright": "^1.60.0"
+  }
+}

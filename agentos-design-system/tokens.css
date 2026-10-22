@@ -1,0 +1,210 @@
+/* Generated from primitive-tokens.md + semantic-tokens.md. Do not hand-edit values here —
+   edit the source markdown, then regenerate. Dark-only system: no light theme exists, so
+   :root already carries the dark palette directly (no [data-theme="dark"] override block —
+   see semantic-tokens.md "Dark aliases: Not applicable").
+
+   CSS VAR PREFIXES vs TOKEN PATHS — deliberate difference, not drift. Tailwind 4 reserves
+   `--text-*` (font sizes), `--radius-*` (corner radii), and `--spacing-*` (the spacing
+   scale) as its own theme namespaces. This design system's token paths in
+   primitive-tokens.md are `text.*` (which are COLORS here) and `radius.*`, so emitting them
+   under those CSS names would collide with Tailwind's namespaces and silently redefine
+   utilities. They are therefore emitted as `--ink-*` and `--shape-radius-*`. The token
+   paths in the markdown/JSON are unchanged; only the CSS variable prefix differs. */
+
+:root {
+  color-scheme: dark;
+
+  /* ── primitives: neutral ─────────────────────────────────────────── */
+  --neutral-0: #ffffff;    --neutral-25: #e3e4e6;   --neutral-50: #d8d8da;
+  --neutral-100: #b8b8b8;  --neutral-200: #98999c;  --neutral-300: #929294;
+  --neutral-400: #6b6b6e;  --neutral-500: #4a4a4d;  --neutral-600: #2f3033;
+  --neutral-700: #242424;  --neutral-800: #1a1a1b;  --neutral-900: #09090a;
+
+  /* ── primitives: indigo (brand) ──────────────────────────────────── */
+  --indigo-0: #f6f6f9;    --indigo-25: #dfe1f6;   --indigo-50: #c7cbef;
+  --indigo-100: #a7aee6;  --indigo-200: #7f89db;  --indigo-300: #5864d0;
+  --indigo-400: #5b67d1;  --indigo-500: #5e6ad2;  --indigo-600: #3645c3;
+  --indigo-700: #293493;  --indigo-800: #1c2364;  --indigo-900: #101439;
+
+  /* ── primitives: green (success) ─────────────────────────────────── */
+  --green-0: #f6f9f7;    --green-25: #dff7e5;   --green-50: #c6f0d1;
+  --green-100: #a6e8b7;  --green-200: #7edd96;  --green-300: #55d375;
+  --green-400: #43ce66;  --green-500: #34c759;  --green-600: #2ba349;
+  --green-700: #207b37;  --green-800: #165425;  --green-900: #0c3015;
+
+  /* ── primitives: orange (warning) ────────────────────────────────── */
+  --orange-0: #f9f7f6;    --orange-25: #ffe9d6;   --orange-50: #ffd9b8;
+  --orange-100: #ffc48f;  --orange-200: #ffa85c;  --orange-300: #ff9c3f;
+  --orange-400: #ff9333;  --orange-500: #ff8d28;  --orange-600: #f27200;
+  --orange-700: #b75600;  --orange-800: #7c3a00;  --orange-900: #472100;
+
+  /* ── primitives: red (danger) ────────────────────────────────────── */
+  --red-0: #f9f6f6;    --red-25: #fbdada;   --red-50: #f8bebe;
+  --red-100: #f49999;  --red-200: #f06b6b;  --red-300: #ef5f5f;
+  --red-400: #ee5252;  --red-500: #ee5d5d;  --red-600: #e82727;
+  --red-700: #ba1313;  --red-800: #7e0d0d;  --red-900: #480808;
+
+  /* ── primitives: surface ladder (sampled, non-linear) ────────────── */
+  --surface-0: #09090a;
+  --surface-1: #121213;
+  --surface-2: #1a1a1b;
+  --surface-3: #242424;
+  --surface-accent-tile: #212121;
+  --surface-border: #1a1b1d;
+  --surface-border-strong: #2f3033;
+  --surface-divider: #27292b;
+
+  /* ── primitives: text colors (token path `text.*`; see prefix note above) ── */
+  --ink-0: #ffffff;  --ink-1: #e3e4e6;  --ink-2: #d8d8da;  --ink-3: #b8b8b8;
+  --ink-4: #98999c;  --ink-5: #959597;  --ink-6: #929294;  --ink-7: #6b6b6e;
+  --ink-8: #4a4a4d;
+
+  /* a11y-corrected (not sampled — see primitive-tokens.md "a11y-corrected variants") */
+  --ink-7-a11y: #7c7c7e;
+  --ink-on-status-fill: #09090a;
+
+  /* ── primitives: flats ────────────────────────────────────────────── */
+  --approve: #338225;
+  --approve-text-a11y: #3e9f2d;
+  --approve-hover-tint: rgba(51,130,37,0.10);
+  --status-gate-bg: #1b2a44;    --status-gate-ink: #93b4e8;
+  --status-warn-bg: #33240a;    --status-warn-ink: #d9a441;
+  --status-model-bg: #241a33;   --status-model-ink: #b79ce0;
+  --flat-bg-secondary: #232326;
+  --flat-bg-secondary-hover: #2c2c30;
+  --flat-bg-ghost-hover: #1e1e21;
+  --flat-bg-input: #0d0d0e;
+  --flat-border-hover: #454649;
+  --flat-toast-danger-border: #5c2626;
+  --flat-toast-danger-ink: #e79b9b;
+  --flat-sidebar-item-hover-bg: #141415;
+  --flat-sidebar-note-ink: #46464a;
+
+  /* ── primitives: typography ──────────────────────────────────────── */
+  --font-family-default: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ── primitives: spacing ─────────────────────────────────────────────
+     The canonical token list. NOT emitted into Tailwind's `--spacing-*`
+     namespace — that namespace drives every numeric spacing utility
+     (p-2, h-6, gap-4) as n x 4px, and overriding it redefines them all.
+     This scale is the same 4px grid, so `p-2` (8px) === `--space-8`.
+     Use these vars directly (e.g. `h-[var(--space-24)]`) only where a
+     component needs an exact value off that grid. */
+  --space-2: 2px;  --space-4: 4px;  --space-6: 6px;  --space-8: 8px;  --space-10: 10px;
+  --space-12: 12px; --space-14: 14px; --space-16: 16px; --space-20: 20px;
+  --space-24: 24px; --space-28: 28px; --space-32: 32px; --space-48: 48px;
+
+  /* ── primitives: radius (token path `radius.*`; see prefix note above) ── */
+  --shape-radius-none: 0px; --shape-radius-sm: 5px; --shape-radius-md: 6px;
+  --shape-radius-lg: 8px; --shape-radius-pill: 48px; --shape-radius-full: 9999px;
+
+  --border-width-default: 1px;
+  --border-width-focus: 2px;
+  --focus-offset: 1px;
+
+  --icon-size-xs: 13px; --icon-size-sm: 14px; --icon-size-md: 16px;
+  --icon-size-lg: 18px; --icon-size-xl: 20px;
+
+  /* ── structural constants (not spacing tokens — see DESIGN.md
+       "Layout & spacing": fixed app-shell measurements, never reused
+       as a general scale) ─────────────────────────────────────────── */
+  --sidebar-w: 220px;
+  --column-w: 348px;
+  --detail-body-max-w: 1120px;
+  --detail-side-w: 320px;
+
+  /* ── semantic: color ──────────────────────────────────────────────── */
+  --semantic-canvas: var(--surface-0);
+  --semantic-surface: var(--surface-1);
+  --semantic-surface-card: var(--surface-2);
+  --semantic-surface-inset: var(--surface-3);
+  --semantic-accent-tile: var(--surface-accent-tile);
+  --semantic-border: var(--surface-border);
+  --semantic-border-strong: var(--surface-border-strong);
+  --semantic-border-hover: var(--flat-border-hover);
+  --semantic-divider: var(--surface-divider);
+
+  --semantic-ink: var(--ink-0);
+  --semantic-ink-strong: var(--ink-1);
+  --semantic-ink-body: var(--ink-3);
+  --semantic-ink-muted: var(--ink-4);
+  --semantic-ink-subtle: var(--ink-5);
+  --semantic-ink-nav: var(--ink-6);
+  --semantic-ink-faint: var(--ink-7-a11y);
+  --semantic-ink-disabled: var(--ink-8);
+  --semantic-ink-inverse: var(--ink-0);
+  --semantic-ink-on-status: var(--ink-on-status-fill);
+
+  --semantic-brand: var(--indigo-500);
+  --semantic-success: var(--green-500);
+  --semantic-warning: var(--orange-500);
+  --semantic-danger: var(--red-500);
+  --semantic-approve: var(--approve-text-a11y);
+
+  /* ── semantic: component & interaction tier ──────────────────────── */
+  --semantic-bg-brand-default: var(--indigo-500);
+  --semantic-bg-secondary-default: var(--flat-bg-secondary);
+  --semantic-bg-secondary-default-hovered: var(--flat-bg-secondary-hover);
+  --semantic-bg-ghost-default-hovered: var(--flat-bg-ghost-hover);
+  --semantic-bg-approve-ghost-hovered: var(--approve-hover-tint);
+  --semantic-bg-input: var(--flat-bg-input);
+  --semantic-icon-default: var(--ink-5);
+  --semantic-icon-muted: var(--ink-4);
+  --semantic-focus-ring: var(--indigo-500);
+  --semantic-sidebar-item-hovered-bg: var(--flat-sidebar-item-hover-bg);
+  --semantic-sidebar-item-hovered-ink: var(--ink-2);
+  --semantic-sidebar-note-ink: var(--flat-sidebar-note-ink);
+
+  /* ── semantic: status badge tier ──────────────────────────────────── */
+  --semantic-bg-badge-running: var(--green-500);
+  --semantic-ink-badge-running: var(--ink-on-status-fill);
+  --semantic-bg-badge-approval: var(--red-500);
+  --semantic-ink-badge-approval: var(--ink-on-status-fill);
+  --semantic-bg-badge-user: var(--orange-500);
+  --semantic-ink-badge-user: var(--ink-on-status-fill);
+  --semantic-bg-badge-done: var(--indigo-500);
+  --semantic-ink-badge-done: var(--ink-0);
+  --semantic-bg-badge-outline: var(--surface-2);
+  --semantic-border-badge-outline: var(--surface-border-strong);
+  --semantic-ink-badge-outline: var(--ink-4);
+  --semantic-bg-badge-gate: var(--status-gate-bg);
+  --semantic-ink-badge-gate: var(--status-gate-ink);
+  --semantic-bg-badge-warn: var(--status-warn-bg);
+  --semantic-ink-badge-warn: var(--status-warn-ink);
+  --semantic-bg-badge-model: var(--status-model-bg);
+  --semantic-ink-badge-model: var(--status-model-ink);
+
+  /* ── semantic: toast ──────────────────────────────────────────────── */
+  --semantic-toast-danger-border: var(--flat-toast-danger-border);
+  --semantic-toast-danger-ink: var(--flat-toast-danger-ink);
+
+  /* ── semantic: typography (named styles, 4 props each) ───────────── */
+  --type-display-font-family: var(--font-family-default);       --type-display-font-size: 24px;       --type-display-font-weight: 600; --type-display-line-height: 30px;
+  --type-heading-font-family: var(--font-family-default);        --type-heading-font-size: 20px;        --type-heading-font-weight: 600; --type-heading-line-height: 25px;
+  --type-heading-sm-font-family: var(--font-family-default);     --type-heading-sm-font-size: 16px;     --type-heading-sm-font-weight: 600; --type-heading-sm-line-height: 20px;
+  --type-label-lg-font-family: var(--font-family-default);       --type-label-lg-font-size: 16px;       --type-label-lg-font-weight: 500; --type-label-lg-line-height: 20px;
+  --type-nav-item-font-family: var(--font-family-default);       --type-nav-item-font-size: 16px;       --type-nav-item-font-weight: 400; --type-nav-item-line-height: 20px;
+  --type-body-lg-font-family: var(--font-family-default);        --type-body-lg-font-size: 16px;        --type-body-lg-font-weight: 500; --type-body-lg-line-height: 160%;
+  --type-title-font-family: var(--font-family-default);          --type-title-font-size: 14px;          --type-title-font-weight: 500; --type-title-line-height: 20px;
+  --type-body-font-family: var(--font-family-default);           --type-body-font-size: 14px;           --type-body-font-weight: 400; --type-body-line-height: 20px;
+  --type-label-font-family: var(--font-family-default);          --type-label-font-size: 13px;          --type-label-font-weight: 400; --type-label-line-height: 16px;
+  --type-caption-strong-font-family: var(--font-family-default); --type-caption-strong-font-size: 12px; --type-caption-strong-font-weight: 500; --type-caption-strong-line-height: 16px;
+  --type-caption-font-family: var(--font-family-default);        --type-caption-font-size: 12px;        --type-caption-font-weight: 400; --type-caption-line-height: 16px;
+  --type-overline-font-family: var(--font-family-default);       --type-overline-font-size: 12px;       --type-overline-font-weight: 600; --type-overline-line-height: 16px;
+  --type-micro-font-family: var(--font-family-default);          --type-micro-font-size: 11px;          --type-micro-font-weight: 400; --type-micro-line-height: 14px;
+  --type-nano-font-family: var(--font-family-default);           --type-nano-font-size: 10px;           --type-nano-font-weight: 400; --type-nano-line-height: 14px;
+
+  /* ── semantic: radius ─────────────────────────────────────────────── */
+  --semantic-radius-none: var(--shape-radius-none);
+  --semantic-radius-sm: var(--shape-radius-sm);
+  --semantic-radius-md: var(--shape-radius-md);
+  --semantic-radius-lg: var(--shape-radius-lg);
+  --semantic-radius-pill: var(--shape-radius-pill);
+  --semantic-radius-full: var(--shape-radius-full);
+}
+
+body {
+  background: var(--semantic-canvas);
+  color: var(--semantic-ink-strong);
+  font-family: var(--font-family-default);
+}

@@ -1,0 +1,72 @@
+{
+  "component": {
+    "name": "Button",
+    "category": "atoms",
+    "description": "The system's clickable-action primitive. Covers form actions, card-footer approval, the floating new-task action, and icon-only utility controls.",
+    "type": "interactive"
+  },
+  "usage": {
+    "useCases": ["form-submit", "dialog-confirm-cancel", "card-footer-approve", "icon-only-toolbar-action"],
+    "requiredProps": [],
+    "commonPatterns": [
+      {
+        "name": "primary-cta",
+        "description": "The one main call-to-action in a dialog or view.",
+        "composition": "<Button appearance=\"primary\">Create task</Button>"
+      },
+      {
+        "name": "approve-footer",
+        "description": "The full-width Approve action in a Card footer.",
+        "composition": "<Button appearance=\"approve-ghost\">Approve</Button>"
+      },
+      {
+        "name": "icon-toolbar-action",
+        "description": "An icon-only action in dense chrome (dialog close, column header).",
+        "composition": "<Button appearance=\"ghost\" size=\"icon\" aria-label=\"Add task\">{icon}</Button>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using appearance=\"primary\" more than once in the same view",
+        "reason": "brand is reserved for the one deliberate call to action per view",
+        "alternative": "Use appearance=\"secondary\" for supporting actions"
+      },
+      {
+        "scenario": "Using Button for navigation between pages",
+        "reason": "a button must not navigate via href",
+        "alternative": "Use a real link (SidebarNav item or an anchor)"
+      },
+      {
+        "scenario": "Using appearance=\"approve-ghost\" anywhere other than a Card footer",
+        "reason": "it is reserved for the single Approve action and is always full-width",
+        "alternative": "Use appearance=\"secondary\" or \"primary\" instead"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "leadingIcon": "ReactNode, optional", "trailingIcon": "ReactNode, optional", "children": "label content" },
+    "nestedComponents": [],
+    "commonPartners": ["Dialog (footer actions)", "Card (approve-ghost footer)", "Column (header icon actions)"],
+    "parentConstraints": ["size=\"icon\" requires an aria-label since there is no visible text"]
+  },
+  "behavior": {
+    "states": ["default", "hover", "disabled", "focus-visible"],
+    "interactions": {
+      "hover": "primary/FAB use a brightness(1.1) filter; secondary/ghost swap to a dedicated -hovered background token; approve-ghost gets a semi-transparent overlay tint",
+      "disabled": "0.5 opacity, pointer-events removed, native disabled attribute"
+    },
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "button (native <button>)",
+    "keyboardSupport": "Enter/Space activates, standard tab order",
+    "screenReader": "icon-only (size=\"icon\") buttons MUST carry aria-label",
+    "focusManagement": "2px focus-ring (brand color) on :focus-visible, 1px offset",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["button", "cta", "action", "approve", "submit", "icon button"],
+    "context": "Use for any single discrete user-triggered action. Never for navigation or for communicating state with no action."
+  }
+}

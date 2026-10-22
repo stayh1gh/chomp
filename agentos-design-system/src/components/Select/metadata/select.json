@@ -1,0 +1,54 @@
+{
+  "component": {
+    "name": "Select",
+    "category": "atoms",
+    "description": "A native <select> restyled with a custom chevron — the only form control in the system besides dialog text inputs. Used to pick a model/reasoning tier per agent in Settings.",
+    "type": "input"
+  },
+  "usage": {
+    "useCases": ["settings-model-picker", "single-value-choice-from-small-set"],
+    "requiredProps": ["options"],
+    "commonPatterns": [
+      {
+        "name": "settings-row-select",
+        "description": "Paired with a visible label in a settings row.",
+        "composition": "<label htmlFor=\"model\">Model</label><Select id=\"model\" options={models} value={value} onChange={onChange} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using Select for more than ~8-10 options or when search is needed",
+        "reason": "this is a plain native select with no search/combobox behavior",
+        "alternative": "There is no combobox component in this system yet — don't fake one by overloading Select"
+      },
+      {
+        "scenario": "Omitting a visible label or aria-label",
+        "reason": "the control must be identifiable to assistive tech",
+        "alternative": "Always pair with a label[for] or pass aria-label"
+      }
+    ]
+  },
+  "composition": {
+    "slots": {},
+    "nestedComponents": [],
+    "commonPartners": ["Settings row (label + Select)"],
+    "parentConstraints": []
+  },
+  "behavior": {
+    "states": ["default", "hover (border only)", "focus-visible (2px focus ring — the reference implementation for this system)", "disabled (0.55 opacity)"],
+    "interactions": {},
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "combobox (native select)",
+    "keyboardSupport": "native select keyboard behavior (arrow keys, type-ahead)",
+    "screenReader": "must be paired with a visible label, not placeholder-only text",
+    "focusManagement": "2px focus-ring, 1px offset on :focus-visible",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["select", "dropdown", "picker"],
+    "context": "The only select-style form control in the system. Single size, no variants."
+  }
+}

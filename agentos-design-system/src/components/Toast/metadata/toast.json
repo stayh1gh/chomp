@@ -1,0 +1,59 @@
+{
+  "component": {
+    "name": "Toast",
+    "category": "molecules",
+    "description": "A bottom-left transient message confirming or reporting the result of an action (settings save, task creation).",
+    "type": "display"
+  },
+  "usage": {
+    "useCases": ["async-confirmation", "async-error-report"],
+    "requiredProps": ["isVisible", "children"],
+    "commonPatterns": [
+      {
+        "name": "save-confirmation",
+        "description": "Confirm a completed async action that doesn't need further user attention.",
+        "composition": "<Toast isVisible={shown}>Settings saved</Toast>"
+      },
+      {
+        "name": "action-error",
+        "description": "Report a non-blocking error from an action just taken.",
+        "composition": "<Toast isVisible={shown} variant=\"error\">Failed to save</Toast>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using Toast for anything requiring a user response",
+        "reason": "toasts are non-interactive and auto-dismiss",
+        "alternative": "Use Dialog"
+      },
+      {
+        "scenario": "Using Toast to show a persistent status",
+        "reason": "toasts are transient by design",
+        "alternative": "Use Badge on the relevant Card"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "children": "message content" },
+    "nestedComponents": [],
+    "commonPartners": [],
+    "parentConstraints": ["Fixed bottom-left position — deliberately paired with the FAB at bottom-right so they never overlap"]
+  },
+  "behavior": {
+    "states": ["hidden (opacity 0, no pointer events)", "shown (opacity 1)"],
+    "interactions": {},
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "status, aria-live=\"polite\" (default) or \"assertive\" (error)",
+    "keyboardSupport": "not applicable — non-interactive",
+    "screenReader": "announced automatically via aria-live without requiring focus to move",
+    "focusManagement": "not applicable",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["toast", "notification", "snackbar", "confirmation"],
+    "context": "Use for routine async confirmations/errors only. Auto-dismiss default variant; keep error variant visible longer."
+  }
+}

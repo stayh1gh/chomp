@@ -1,0 +1,59 @@
+{
+  "component": {
+    "name": "Badge",
+    "category": "atoms",
+    "description": "A non-interactive status pill communicating run/step state or metadata inline on a card or in the run detail sidebar.",
+    "type": "display"
+  },
+  "usage": {
+    "useCases": ["card-status-indicator", "metadata-tag", "gate-marker"],
+    "requiredProps": ["variant", "children"],
+    "commonPatterns": [
+      {
+        "name": "status-badge",
+        "description": "Show a card or sub-task's live status. Exactly one per card.",
+        "composition": "<Badge variant=\"running\">Running</Badge>"
+      },
+      {
+        "name": "metadata-badge",
+        "description": "Additive, non-status metadata alongside a status badge.",
+        "composition": "<Badge variant=\"gate\">Queued</Badge>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using Badge as a clickable filter or toggle",
+        "reason": "badges have no interactive states and are not focusable",
+        "alternative": "Use Button or Select for anything the user acts on"
+      },
+      {
+        "scenario": "Showing more than one status (running/approval/user/done) badge on one card",
+        "reason": "these variants are mutually exclusive per card",
+        "alternative": "Pick the single current status"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "children": "label content" },
+    "nestedComponents": [],
+    "commonPartners": ["Card (card-tags slot)"],
+    "parentConstraints": []
+  },
+  "behavior": {
+    "states": ["default (no interactive states)"],
+    "interactions": {},
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "none (plain span; the label text itself is the accessible signal)",
+    "keyboardSupport": "not applicable — non-interactive",
+    "screenReader": "status must never be color-only; label text carries the meaning",
+    "focusManagement": "not applicable",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["badge", "status", "pill", "tag", "gate", "running", "done"],
+    "context": "Use variant=\"running\"|\"approval\"|\"user\"|\"done\" for the one live status; \"outline\"/\"gate\"/\"warn\"/\"model\" for additive metadata."
+  }
+}

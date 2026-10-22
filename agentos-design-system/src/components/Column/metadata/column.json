@@ -1,0 +1,54 @@
+{
+  "component": {
+    "name": "Column",
+    "category": "organisms",
+    "description": "One board lane: header (icon, label, count, hover-revealed actions) plus a scrollable stack of Card instances.",
+    "type": "container"
+  },
+  "usage": {
+    "useCases": ["board-lane"],
+    "requiredProps": ["title"],
+    "commonPatterns": [
+      {
+        "name": "phase-column",
+        "description": "One instance per phase value declared by the active chain, in the chain's own order.",
+        "composition": "<Column title=\"Plan\" count={cards.length} icon={<PlanIcon />} actions={<Button appearance=\"ghost\" size=\"icon\" aria-label=\"Add task\">+</Button>}>{cards.map(c => <Card key={c.id} {...c} />)}</Column>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using Column as a generic list container outside the board",
+        "reason": "its header anatomy (icon + count + hover actions) is board-specific",
+        "alternative": "Build a plain list for non-board use cases"
+      },
+      {
+        "scenario": "Hardcoding the column list in the app instead of reading flow.yaml",
+        "reason": "columns must come from flow.yaml's declared order",
+        "alternative": "Derive the Column list from flow.yaml"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "icon": "ReactNode, optional", "actions": "ReactNode, optional, hover/focus-revealed", "children": "Card instances" },
+    "nestedComponents": ["Card (children)", "Button (header actions, icon size)"],
+    "commonPartners": ["Board/app shell (parent)", "Card (children)"],
+    "parentConstraints": ["Meant to be laid out in a horizontally-scrolling board row"]
+  },
+  "behavior": {
+    "states": ["default", "hover (reveals header actions)", "empty (shows emptyLabel placeholder)"],
+    "interactions": {},
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "region with a real <h2> heading (not a styled div) for column-by-column screen reader navigation",
+    "keyboardSupport": "header actions remain reachable via :focus-within, not hover alone",
+    "screenReader": "empty column shows a text message, never a silent blank lane",
+    "focusManagement": "n/a at the Column level — delegated to its Card/Button children",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["column", "board lane", "kanban column", "swimlane"],
+    "context": "One per chain phase, in chain-declared order. Renders Card children in a scrollable stack."
+  }
+}

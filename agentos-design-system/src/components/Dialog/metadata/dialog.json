@@ -1,0 +1,62 @@
+{
+  "component": {
+    "name": "Dialog",
+    "category": "organisms",
+    "description": "Modal overlay in two forms: a standard centered modal for short forms (sm/default sizes), and a full-page variant with no backdrop tint for the run detail view.",
+    "type": "container"
+  },
+  "usage": {
+    "useCases": ["short-form-modal", "confirmation-modal", "full-page-detail-view"],
+    "requiredProps": ["isOpen", "onClose", "title"],
+    "commonPatterns": [
+      {
+        "name": "new-task-form",
+        "description": "A short, focused form dialog.",
+        "composition": "<Dialog isOpen={open} onClose={close} title=\"New Task\" size=\"sm\" footer={<Button appearance=\"primary\">Create</Button>}>...</Dialog>"
+      },
+      {
+        "name": "run-detail-page",
+        "description": "The full-page variant, offset by the sidebar, no backdrop.",
+        "composition": "<Dialog isOpen={open} onClose={close} title={runTitle} size=\"full\">...</Dialog>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using Dialog for non-blocking supplementary content",
+        "reason": "a dialog interrupts the user's flow",
+        "alternative": "Use an inline side-section in the existing page"
+      },
+      {
+        "scenario": "Dismissing a dialog with unsaved input without confirming",
+        "reason": "risks silent data loss",
+        "alternative": "Confirm before calling onClose when the form is dirty"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "description": "ReactNode, optional", "footer": "ReactNode, optional action area", "children": "body content" },
+    "nestedComponents": ["Button (footer actions)", "Select/inputs (form body)"],
+    "commonPartners": ["Card (opens the full-size variant on click)"],
+    "parentConstraints": ["Rendered via a portal to document.body — no DOM nesting constraint"]
+  },
+  "behavior": {
+    "states": ["closed (renders nothing)", "open"],
+    "interactions": {
+      "escape": "closes the dialog",
+      "backdrop-click": "closes the dialog (sm/default only — full has no backdrop)"
+    },
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "dialog, aria-modal=\"true\"",
+    "keyboardSupport": "Escape closes; focus moves into the dialog on open and returns to the trigger on close",
+    "screenReader": "aria-labelledby points at the title",
+    "focusManagement": "focus moves to dialog content on open; the full variant is still a dismissible overlay semantically despite reading as a page",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["dialog", "modal", "detail page", "overlay"],
+    "context": "Use size=\"sm\"/\"default\" for forms and confirmations; size=\"full\" only for page-level content like the run detail view."
+  }
+}

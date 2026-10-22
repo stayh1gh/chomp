@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "../tokens.css";
+
+@theme {
+  /* colors */
+  --color-canvas: var(--semantic-canvas);
+  --color-surface: var(--semantic-surface);
+  --color-surface-card: var(--semantic-surface-card);
+  --color-surface-inset: var(--semantic-surface-inset);
+  --color-accent-tile: var(--semantic-accent-tile);
+  --color-border: var(--semantic-border);
+  --color-border-strong: var(--semantic-border-strong);
+  --color-border-hover: var(--semantic-border-hover);
+  --color-divider: var(--semantic-divider);
+
+  --color-ink: var(--semantic-ink);
+  --color-ink-strong: var(--semantic-ink-strong);
+  --color-ink-body: var(--semantic-ink-body);
+  --color-ink-muted: var(--semantic-ink-muted);
+  --color-ink-subtle: var(--semantic-ink-subtle);
+  --color-ink-nav: var(--semantic-ink-nav);
+  --color-ink-faint: var(--semantic-ink-faint);
+  --color-ink-disabled: var(--semantic-ink-disabled);
+  --color-ink-inverse: var(--semantic-ink-inverse);
+  --color-ink-on-status: var(--semantic-ink-on-status);
+
+  --color-brand: var(--semantic-brand);
+  --color-success: var(--semantic-success);
+  --color-warning: var(--semantic-warning);
+  --color-danger: var(--semantic-danger);
+  --color-approve: var(--semantic-approve);
+
+  --color-bg-brand-default: var(--semantic-bg-brand-default);
+  --color-bg-secondary-default: var(--semantic-bg-secondary-default);
+  --color-bg-secondary-default-hovered: var(--semantic-bg-secondary-default-hovered);
+  --color-bg-ghost-default-hovered: var(--semantic-bg-ghost-default-hovered);
+  --color-bg-approve-ghost-hovered: var(--semantic-bg-approve-ghost-hovered);
+  --color-bg-input: var(--semantic-bg-input);
+  --color-icon-default: var(--semantic-icon-default);
+  --color-icon-muted: var(--semantic-icon-muted);
+  --color-focus-ring: var(--semantic-focus-ring);
+  --color-sidebar-item-hovered-bg: var(--semantic-sidebar-item-hovered-bg);
+  --color-sidebar-item-hovered-ink: var(--semantic-sidebar-item-hovered-ink);
+  --color-sidebar-note-ink: var(--semantic-sidebar-note-ink);
+
+  --color-bg-badge-running: var(--semantic-bg-badge-running);
+  --color-ink-badge-running: var(--semantic-ink-badge-running);
+  --color-bg-badge-approval: var(--semantic-bg-badge-approval);
+  --color-ink-badge-approval: var(--semantic-ink-badge-approval);
+  --color-bg-badge-user: var(--semantic-bg-badge-user);
+  --color-ink-badge-user: var(--semantic-ink-badge-user);
+  --color-bg-badge-done: var(--semantic-bg-badge-done);
+  --color-ink-badge-done: var(--semantic-ink-badge-done);
+  --color-bg-badge-outline: var(--semantic-bg-badge-outline);
+  --color-border-badge-outline: var(--semantic-border-badge-outline);
+  --color-ink-badge-outline: var(--semantic-ink-badge-outline);
+  --color-bg-badge-gate: var(--semantic-bg-badge-gate);
+  --color-ink-badge-gate: var(--semantic-ink-badge-gate);
+  --color-bg-badge-warn: var(--semantic-bg-badge-warn);
+  --color-ink-badge-warn: var(--semantic-ink-badge-warn);
+  --color-bg-badge-model: var(--semantic-bg-badge-model);
+  --color-ink-badge-model: var(--semantic-ink-badge-model);
+
+  --color-toast-danger-border: var(--semantic-toast-danger-border);
+  --color-toast-danger-ink: var(--semantic-toast-danger-ink);
+
+  /* typography — font-family only. Tailwind reserves `--text-*` for its own font-size
+     scale (text-sm, text-lg, …); our named type styles bundle size+weight+family+
+     line-height together (see DESIGN.md "Typography"), which a single Tailwind
+     font-size utility can't express. Components bind to the full style explicitly via
+     `text-[length:var(--type-<name>-font-size)]` plus the sibling --type-* vars for
+     weight/family/line-height — never a bare `text-*` utility for a named style. */
+  --font-sans: var(--font-family-default);
+
+  /* spacing — deliberately NOT overridden here. Tailwind's `--spacing` multiplier
+     already produces exactly our 4px-grid scale (p-2 = 8px, h-6 = 24px, …), and every
+     component was written assuming that default. Do not add `--spacing-<n>` entries to
+     this block — doing so once silently redefined h-6/h-8/h-10/p-2/etc. across every
+     component (see agentos-design-system git history for the incident). Reach for the
+     `--space-*` vars from tokens.css directly (`h-[var(--space-24)]`) for any value off
+     that grid. */
+
+  /* radius */
+  --radius-none: var(--semantic-radius-none);
+  --radius-sm: var(--semantic-radius-sm);
+  --radius-md: var(--semantic-radius-md);
+  --radius-lg: var(--semantic-radius-lg);
+  --radius-pill: var(--semantic-radius-pill);
+  --radius-full: var(--semantic-radius-full);
+}
+
+body {
+  margin: 0;
+}

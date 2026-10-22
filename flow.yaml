@@ -1,0 +1,144 @@
+# The board: its columns, in order, and who works each one.
+#
+# owner: agent  → the runner dispatches `agent` as soon as a card enters the column.
+#                 `on_done` is where the card goes when the agent finishes: another column
+#                 (auto-advance) or `stay` (the card shows "Ready" and waits for you to drag it).
+# owner: human  → the card waits for you. Chat messages on it go to `chat_agent`, if any.
+# steps          → the checklist shown on the card. A step with `file` is ticked when the
+#                 agent writes that file into the task folder; ticking a step ticks every
+#                 step before it.
+#                 A step with `tool` is ticked on the agent's first call of that tool; a step
+#                 with `verify: true` is ticked when the column's `verify` check passes.
+# icon           → Lucide icon name (lucide.dev) shown before the column title on the board.
+# requires_mcp   → MCP servers (matched by name) the runner checks before dispatching.
+# optional_mcp   → MCP servers the column's agent uses when connected but works without
+#                 (gdrive: Google Docs/Drive links). Shown on Connections; never blocks a card.
+# worktree       → the runner creates a git worktree for the task and makes it the agent's cwd
+#                 and only writable code location; removed (if clean) when the card hits Done.
+# verify         → a check the runner runs itself after the agent says it's done.
+#                 figma-ds-lint: harness/figma/ds-lint.js on the nodes the designer names in
+#                 figma_nodes (never the rest of the task's Figma page); errors
+#                 go back to the agent (2 rounds), then block the card.
+#                 `viewports` says where the lint wants full pages: `primary` → only at the
+#                 profile's primary viewport (`primary: true`, else the only or the widest);
+#                 `all` (the default) → at every profile viewport, each non-primary one in
+#                 its own "<section> — <width>" sections ("Final — 390"), which the lint
+#                 reads together with their primary section. `full_pages` names section
+#                 groups that must have those full pages whether or not the designer listed
+#                 them (Directions are always checked when listed).
+#                 draft-pr: `gh pr view` on links.pr — must be a draft from the task branch.
+#                 worktree columns share one worktree per task (Development, Draft PR).
+# kinds          → the task types the column is part of (`full`, `design`). A column without
+#                 `kinds` serves every type. A card can't be moved into a column that
+#                 doesn't serve its type; a design-only task ends after Refinement.
+#
+# standing_rules → the owner's rules for every project and every agent, whatever the profile.
+#                 The runner puts them in every dispatch, ahead of the profile's own
+#                 design_requirements.
+
+standing_rules:
+  - >-
+    In Figma, design only with the Design System found in the profile's Figma library file
+    (figma.library_file) — always. Place its component instances and bind every fill, stroke,
+    radius, spacing and text to its variables and styles. Never draw a lookalike, never detach
+    an instance. When the library has no component for something, put a "⚠ Missing: <Name>"
+    placeholder and say so in the chat.
+  - >-
+    In code, build with the repo components that map to those Figma components
+    (figma.components_index or Code Connect), never re-implementations of them.
+
+columns:
+  - id: plan
+    icon: compass
+    title: Plan
+    owner: agent
+    agent: planner
+    on_done: ideation
+    requires_mcp: [mobbin]
+    optional_mcp: [gdrive]
+    steps:
+      - { name: Questions }
+      - { name: Spec, file: spec.md }
+      - { name: Plan, file: plan.md }
+      - { name: Research, file: research.md }
+
+  - id: ideation
+    icon: lightbulb
+    title: Ideation
+    owner: agent
+    agent: designer
+    on_done: designing
+    requires_mcp: [figma]
+    optional_mcp: [gdrive]
+    verify: figma-ds-lint
+    viewports: primary # per direction: the asked-for screen, or a flow's main path, at the primary viewport; the rest is Refinement's
+    steps:
+      - { name: Figma page, tool: use_figma }
+      - { name: References, tool: upload_assets }
+      - { name: Directions, file: design.md }
+      - { name: DS lint, verify: true }
+
+  - id: designing
+    icon: palette
+    title: Designing
+    owner: human
+    chat_agent: designer
+    requires_mcp: [figma] # for chat edits
+    optional_mcp: [gdrive]
+    verify: figma-ds-lint # chat edits get linted too
+    viewports: primary # the owner is still picking; other viewports come in Refinement
+
+  - id: refinement
+    icon: search
+    title: Refinement
+    owner: agent
+    agent: designer
+    on_done: stay
+    requires_mcp: [figma]
+    optional_mcp: [gdrive]
+    verify: figma-ds-lint
+    viewports: all # the picked direction's other surfaces, every viewport, flows and states
+    full_pages: [Final, Flows & states] # "Final — 390" and "Flows & states — 390" must exist
+    steps:
+      - { name: Cleanup, tool: use_figma } # unpicked directions deleted, components gathered
+      - { name: Viewports, tool: use_figma } # Final's screens and the plan's other surfaces at every viewport
+      - { name: Flows }
+      - { name: States, file: states.md }
+      - { name: DS lint, verify: true }
+
+  - id: development
+    icon: hammer
+    title: Development
+    owner: agent
+    agent: builder
+    on_done: stay
+    requires_mcp: [figma]
+    optional_mcp: [gdrive]
+    kinds: [full] # design-only tasks skip it
+    worktree: true # the runner gives each task its own git worktree on agentos/<task id>
+    steps:
+      - { name: Build, tool: Edit }
+      - { name: Clean up } # lint, dead code out, only the essential comments
+      - { name: Checks }
+      - { name: Visual QA, file: qa.md } # screenshots of every state, for the owner's review
+
+  # The owner reviewed qa.md and moved the card here: the builder opens the draft PR. They review
+  # it on GitHub; their "Open PR for review" button on the card marks it ready.
+  - id: review
+    icon: eye
+    title: Draft PR
+    owner: agent
+    agent: builder
+    on_done: stay
+    kinds: [full]
+    worktree: true # same worktree and branch as Development
+    verify: draft-pr # the PR in links.pr must exist, be a draft, and go branch → base
+    steps:
+      - { name: Clean up } # anything changed since Development
+      - { name: Push }
+      - { name: Draft PR, verify: true }
+
+  - id: done
+    icon: circle-check
+    title: Done
+    owner: human

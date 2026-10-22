@@ -1,0 +1,54 @@
+{
+  "component": {
+    "name": "Card",
+    "category": "molecules",
+    "description": "The board's primary content unit — one run per card, its meta, description, tags, and an optional Approve footer.",
+    "type": "container"
+  },
+  "usage": {
+    "useCases": ["board-column-item", "list-item-with-anatomy"],
+    "requiredProps": ["title"],
+    "commonPatterns": [
+      {
+        "name": "board-card",
+        "description": "A run card inside a Column, opening the detail Dialog on click.",
+        "composition": "<Card title=\"Meter — low step\" meta=\"run-42\" description=\"...\" tags={<Badge variant=\"running\">Running</Badge>} footer={<Button appearance=\"approve-ghost\">Approve</Button>} onClick={openDetail} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Using Card as a generic content box",
+        "reason": "its padding and slot anatomy is specific to the board item shape",
+        "alternative": "Use a plain div with surface-card background for generic boxed content"
+      },
+      {
+        "scenario": "Nesting a second surface-inset box inside the description",
+        "reason": "surface-inset is reserved for the description well only",
+        "alternative": "Use surface-card or a plain container for other nested content"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "meta": "ReactNode, optional", "description": "ReactNode, optional, clamped to 4 lines", "tags": "ReactNode, optional", "footer": "ReactNode, optional — renders the divider only when present" },
+    "nestedComponents": ["Badge (in tags)", "Button (approve-ghost, in footer)"],
+    "commonPartners": ["Column (parent)", "Dialog (opened by onClick)"],
+    "parentConstraints": ["Meant to live inside a Column's card stack"]
+  },
+  "behavior": {
+    "states": ["default", "hover (adds inset ring, no background change)", "focus-visible (only when onClick is provided)"],
+    "interactions": { "click": "opens the run detail page when onClick is provided" },
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "button (only when onClick is provided — otherwise a plain div)",
+    "keyboardSupport": "Enter/Space activates onClick when interactive",
+    "screenReader": "the 4-line description clamp must not be the only way to read the full text — link to the full detail view",
+    "focusManagement": "2px focus-ring on :focus-visible when interactive",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["card", "board item", "run card", "task card"],
+    "context": "Use inside Column to represent one board item. Pass onClick to open the run detail Dialog."
+  }
+}

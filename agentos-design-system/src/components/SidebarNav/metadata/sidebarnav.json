@@ -1,0 +1,54 @@
+{
+  "component": {
+    "name": "SidebarNav",
+    "category": "organisms",
+    "description": "The fixed 220px left rail — brand mark, a 5-item nav list, and a footer disclosure. The one persistent app-level navigation surface.",
+    "type": "navigation"
+  },
+  "usage": {
+    "useCases": ["app-shell-primary-navigation"],
+    "requiredProps": ["items"],
+    "commonPatterns": [
+      {
+        "name": "app-shell-nav",
+        "description": "One instance per page render, rendered alongside the main panel.",
+        "composition": "<SidebarNav logo={<img src=\"...\" />} items={navItems} footerNote=\"Generated 2026-08-21, not live\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "Rendering more than one SidebarNav instance per page",
+        "reason": "it is the one persistent app-level navigation surface",
+        "alternative": "Use detail-breadcrumb-style contextual navigation for secondary nav (e.g. inside a detail page)"
+      },
+      {
+        "scenario": "Giving an unbuilt route a real href just to look consistent",
+        "reason": "presents an unbuilt page as a working link to assistive tech",
+        "alternative": "Omit href — the item renders inert automatically"
+      }
+    ]
+  },
+  "composition": {
+    "slots": { "logo": "ReactNode, optional", "footerNote": "ReactNode, optional" },
+    "nestedComponents": [],
+    "commonPartners": ["App shell / main panel (sibling)"],
+    "parentConstraints": ["Fixed width via --sidebar-w; expects to sit beside the main panel"]
+  },
+  "behavior": {
+    "states": ["default", "hover (real links only)", "active (current route, set at render time)"],
+    "interactions": {},
+    "responsive": {}
+  },
+  "accessibility": {
+    "role": "nav; active item uses aria-current=\"page\"",
+    "keyboardSupport": "standard link tab order for items with an href",
+    "screenReader": "inert items render as <span>, never as a dead <a>",
+    "focusManagement": "no custom focus ring implemented yet — required when items become deep-linked",
+    "wcag": "AA"
+  },
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["sidebar", "nav", "navigation rail", "app shell"],
+    "context": "Use once per app shell. Only mark items with a real href as isActive-capable — unbuilt routes stay inert."
+  }
+}

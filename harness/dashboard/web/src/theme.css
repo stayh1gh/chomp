@@ -1,0 +1,197 @@
+/* Chomp board theme. Colors come from agentos-design-system/tokens.css (dark-only: the
+   palette sits on :root, and <html class="dark"> keeps shadcn's dark: variants on). shadcn's
+   variables below are aliases of the semantic tokens. Edit tokens.css, not these.
+
+   Geometry is the board's own 4pt grid (Bruno, 2026-10-14): every space, size, radius and
+   line-height is a multiple of 4. Tailwind's spacing (n × 4px) and its text-xs/sm/base sizes
+   (12/16, 14/20, 16/24) already match it; text-xl is the 20/28 panel heading and text-2xl the
+   24/32 page title. */
+
+@import "tailwindcss";
+@import "../../../../agentos-design-system/tokens.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-family-default);
+  --font-heading: var(--font-family-default);
+  /* The Chomp wordmark only (sidebar logo), per the Figma logo frame. */
+  --font-brand: "Nata Sans", var(--font-family-default);
+
+  /* shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Chomp semantics shadcn has no name for */
+  --color-surface: var(--semantic-surface);
+  --color-surface-card: var(--semantic-surface-card);
+  --color-surface-inset: var(--semantic-surface-inset);
+  --color-input-bg: var(--semantic-bg-input);
+  --color-border-subtle: var(--semantic-border);
+  --color-border-hover: var(--semantic-border-hover);
+  --color-divider: var(--semantic-divider);
+  --color-ink-strong: var(--semantic-ink-strong);
+  --color-ink-body: var(--semantic-ink-body);
+  --color-ink-muted: var(--semantic-ink-muted);
+  --color-ink-subtle: var(--semantic-ink-subtle);
+  --color-ink-nav: var(--semantic-ink-nav);
+  --color-ink-faint: var(--semantic-ink-faint);
+  --color-ink-disabled: var(--semantic-ink-disabled);
+  --color-brand: var(--semantic-brand);
+  --color-success: var(--semantic-success);
+  --color-warning: var(--semantic-warning);
+  --color-danger: var(--semantic-danger);
+  --color-danger-ink: var(--semantic-toast-danger-ink);
+  --color-danger-border: var(--semantic-toast-danger-border);
+  --color-warn-bg: var(--semantic-bg-badge-warn);
+  --color-warn-ink: var(--semantic-ink-badge-warn);
+  --color-model-bg: var(--semantic-bg-badge-model);
+  --color-model-ink: var(--semantic-ink-badge-model);
+
+  /* Radii on the 4pt grid. shadcn draws controls with rounded-lg and cards with rounded-xl,
+     which lands them on the board's 8px controls and 12px panels. */
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-md);
+  --radius-xl: var(--r-lg);
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+}
+
+:root {
+  /* Board geometry (was app.css :root) */
+  --u1: 4px; --u2: 8px; --u3: 12px; --u4: 16px; --u5: 20px; --u6: 24px;
+  --u8: 32px; --u10: 40px; --u12: 48px; --u16: 64px;
+  --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-pill: 999px;
+  --control: 40px; --control-sm: 32px;
+  /* The maximized chat's width, and the column its messages and composer keep to. */
+  --chat-panel: clamp(400px, 40vw, 720px); --chat-column: 720px;
+
+  /* shadcn → Chomp semantic tokens */
+  --radius: var(--r-md);
+  --background: var(--semantic-canvas);
+  --foreground: var(--semantic-ink-strong);
+  --card: var(--semantic-surface-card);
+  --card-foreground: var(--semantic-ink-strong);
+  --popover: var(--semantic-surface);
+  --popover-foreground: var(--semantic-ink-strong);
+  --primary: var(--semantic-bg-brand-default);
+  --primary-foreground: var(--semantic-ink-inverse);
+  --secondary: var(--semantic-bg-secondary-default);
+  --secondary-foreground: var(--semantic-ink-strong);
+  --muted: var(--semantic-surface-inset);
+  --muted-foreground: var(--semantic-ink-muted);
+  --accent: var(--semantic-bg-ghost-default-hovered);
+  --accent-foreground: var(--semantic-ink-strong);
+  --destructive: var(--semantic-danger);
+  /* The visible outline everywhere (inputs, dialogs, setting cards). The faint one is border-subtle. */
+  --border: var(--semantic-border-strong);
+  --input: var(--semantic-border-strong);
+  --ring: var(--semantic-focus-ring);
+  --chart-1: var(--semantic-brand);
+  --chart-2: var(--semantic-success);
+  --chart-3: var(--semantic-warning);
+  --chart-4: var(--semantic-danger);
+  --chart-5: var(--semantic-ink-badge-model);
+  --sidebar: var(--semantic-canvas);
+  --sidebar-foreground: var(--semantic-ink-nav);
+  --sidebar-primary: var(--semantic-bg-brand-default);
+  --sidebar-primary-foreground: var(--semantic-ink-inverse);
+  --sidebar-accent: var(--semantic-sidebar-item-hovered-bg);
+  --sidebar-accent-foreground: var(--semantic-sidebar-item-hovered-ink);
+  --sidebar-border: var(--semantic-border);
+  --sidebar-ring: var(--semantic-focus-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  /* No track box behind scrollbars (macOS "always show scrollbars"): just the thumb. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--semantic-border-strong) transparent;
+  }
+}
+
+/* Unlayered, like tokens.css's own body rule (ink-strong), which it overrides: body copy is
+   ink-body, as on the classic board. */
+body {
+  background: var(--semantic-canvas);
+  color: var(--semantic-ink-body);
+  font-family: var(--font-family-default);
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Documents the server renders from Markdown (task panel tabs, full-page docs). Element styles,
+   since the markup comes from harness/dashboard/markdown.mjs, not from components. */
+.doc { color: var(--semantic-ink-body); overflow-wrap: anywhere; }
+.doc p, .doc ul, .doc ol { margin: 0 0 var(--u4); }
+/* Tailwind's reset strips what the classic board got from the browser: list markers, indents. */
+.doc ul { list-style: disc; padding-left: var(--u10); }
+.doc ol { list-style: decimal; padding-left: var(--u10); }
+.doc h1, .doc h2, .doc h3 { color: var(--semantic-ink-strong); margin: var(--u6) 0 var(--u2); font-weight: 600; }
+.doc h1 { font-size: 24px; line-height: 32px; margin-top: 0; }
+.doc h2 { font-size: 20px; line-height: 28px; }
+.doc h3 { font-size: 16px; line-height: 24px; }
+.doc a { color: var(--semantic-ink-strong); text-decoration: underline; }
+.doc code { background: var(--semantic-surface-inset); padding: 0 var(--u1); border-radius: var(--r-sm); }
+.doc pre { background: var(--semantic-canvas); padding: var(--u3); border-radius: var(--r-md); overflow-x: auto; }
+.doc pre code { background: none; padding: 0; }
+.doc blockquote { margin: 0 0 var(--u4) var(--u10); }
+.doc hr { border: 0; border-top: 1px solid var(--semantic-divider); margin: var(--u6) 0; }
+.doc table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px; display: block; overflow-x: auto; margin-bottom: var(--u4); }
+.doc th, .doc td { text-align: left; padding: var(--u2) var(--u3); border-bottom: 1px solid var(--semantic-divider); vertical-align: top; }
+.doc th { color: var(--semantic-ink-subtle); font-weight: 600; }
+.doc img { max-width: 100%; border-radius: var(--r-md); }
+/* The agent's chat messages: Claude-style prose, tighter than a document. */
+.doc-chat { color: var(--semantic-ink-strong); }
+.doc-chat p, .doc-chat ul, .doc-chat ol, .doc-chat pre, .doc-chat blockquote, .doc-chat table { margin: 0 0 var(--u3); }
+.doc-chat > :last-child { margin-bottom: 0; }
+.doc-chat code { font-size: 14px; }
+.doc-chat ul, .doc-chat ol { padding-left: var(--u6); }
+.doc-chat li + li { margin-top: var(--u1); }
+.doc-chat h1, .doc-chat h2, .doc-chat h3 { font-size: 16px; line-height: 24px; margin: var(--u4) 0 var(--u1); }
+.doc-chat > h1:first-child, .doc-chat > h2:first-child, .doc-chat > h3:first-child { margin-top: 0; }
+.doc-full { max-width: 1600px; width: 100%; margin: 0 auto; }
+.doc-full table { display: table; }

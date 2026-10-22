@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chomp turn result",
+  "description": "The fenced json block every agent turn ends with. Validated by harness/runner/turn-result.mjs; the runner turns it into card state and chat messages.",
+  "type": "object",
+  "required": ["status", "summary"],
+  "properties": {
+    "status": { "enum": ["done", "answered", "needs_input", "blocked"], "description": "answered: the owner only asked or chatted; the agent replied and changed nothing, so the card stays as it was." },
+    "summary": { "type": "string", "minLength": 1, "description": "The agent's chat message to the owner, in Markdown: second person to them, first person about itself." },
+    "questions": {
+      "type": "array", "minItems": 1, "maxItems": 5,
+      "items": {
+        "type": "object", "required": ["question"],
+        "properties": {
+          "id": { "type": "string" },
+          "question": { "type": "string" },
+          "options": { "type": "array", "items": { "type": "string" } },
+          "recommended": { "type": "string" }
+        }
+      }
+    },
+    "blocker": { "type": "string", "description": "Required when status is blocked: what would unblock the agent." },
+    "links": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^https?://" } },
+    "figma_nodes": {
+      "type": "array", "items": { "type": "string", "pattern": "^[0-9]+[:-][0-9]+$" },
+      "description": "Designer: ids of the sections/frames it created or changed on the task's Figma page. The runner's DS lint judges only these."
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "needs_input" } } }, "then": { "required": ["questions"] } },
+    { "if": { "properties": { "status": { "const": "blocked" } } }, "then": { "required": ["blocker"] } }
+  ]
+}

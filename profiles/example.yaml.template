@@ -1,0 +1,79 @@
+# Chomp profile template. A profile binds Chomp to one project: its repo, its Figma design
+# system, and your standing rules for it. To add yours:
+#
+#   cp profiles/example.yaml.template profiles/<name>.yaml
+#
+# then fill in every TODO and pick the project in the board's Settings. Easier: ask Claude
+# Code to "set up a Chomp project" in this folder, and it asks you and fills this in.
+#
+# The whole file is pasted into every agent's prompt, so comments and extra keys are read
+# too: write them for the agents. Profiles are yours: git ignores profiles/*.yaml, so
+# updates never touch them.
+
+name: TODO # must match the file name, e.g. acme-web for profiles/acme-web.yaml
+label: TODO # what the board shows, e.g. "Acme · Web app"
+# account: default # the Claude account this project's agents run as; leave out to use Settings'
+# task_kinds: [design] # design only even with a repo (agents read the code but never change it)
+
+# Code: leave repo, github, base_branch and commands out for a design-only project (no code,
+# cards end after Refinement); its agents work in board/projects/<name>/ instead.
+repo: TODO # absolute path to your local git checkout, e.g. /Users/you/code/acme-web
+github: TODO # owner/name, e.g. acme/web; the builder opens draft PRs here (gh must have push access)
+base_branch: main # task branches are cut from origin/<base_branch>; PRs target it
+
+figma:
+  # The published Design System library. Agents only place its instances and bind to its
+  # variables and styles; they never edit or publish it. The key is in its URL:
+  # figma.com/design/<key>/…
+  library_file: TODO
+  # The file where Chomp creates one page per task. You need edit access. Leave TODO and
+  # every new task asks for its own Figma file instead.
+  work_file: TODO
+  # Optional: pages of your latest shipped layouts, for the designer to follow.
+  # reference_pages:
+  #   - { id: "123:456", name: "[LIVE]" }
+  # Several design systems? Replace library_file/work_file with a list; each task picks one:
+  # libraries:
+  #   - { id: web, label: Web, library_file: <key>, work_file: <key>, context: [/abs/path/DESIGN.md] }
+
+design_system:
+  # Docs in your repo the agents read before designing or building (paths relative to repo).
+  context: [] # e.g. [DESIGN.md, docs/components.md]
+  # components: src/components/ui # where the builder finds your coded components
+  # tokens: src/styles/tokens.css
+
+commands: # how the builder runs your repo's checks; leave out what you don't have
+  dev: TODO # starts the app locally, e.g. pnpm dev (also used for "Run locally" and app_reference)
+  # lint: pnpm lint
+  # typecheck: pnpm typecheck
+  # test: pnpm test
+  # build: pnpm build
+
+# The frames every design is drawn at. The DS lint forces a full page at each one; Ideation
+# draws only the primary one, Refinement adds the rest.
+viewports:
+  - { w: 1440, h: 900, primary: true } # desktop
+  # - { w: 390, h: 844 } # phone
+
+# Your standing rules for every design in this project. Mandatory for every agent; they win
+# over a skill's defaults. Keep them short and checkable.
+design_requirements:
+  - Design the FULL page at each viewport, inside the product's real chrome (navigation,
+    headers, tab bars), never a floating component.
+  - Use realistic content, never lorem ipsum.
+
+# Optional: the real app for the designer to capture before drawing (harness/qa/app-reference.mjs).
+# It runs commands.dev in a worktree at origin/<base_branch> on this port.
+# app_reference:
+#   port: 3417
+#   galleries:
+#     - { path: /, what: the home page }
+
+# Optional: "Run locally" on a card serves the task's build from its worktree.
+# app_preview:
+#   port: 3418
+#   path: /
+
+constraints:
+  never_publish_figma_library: true
+  worktree_per_task: true # each task builds in its own git worktree of repo

@@ -1,0 +1,34 @@
+{
+  "name": "agentos-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Thin Electron wrapper that launches the Chomp board as a local Mac app. See AGENTS.md and README.md at the repo root for what it wraps.",
+  "main": "main.mjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac dir",
+    "install-app": "npm run build && mkdir -p \"${CHOMP_APPS_DIR:-$HOME/Applications}\" && rsync -a --delete dist/mac*/Chomp.app \"${CHOMP_APPS_DIR:-$HOME/Applications}/\" && echo \"Installed to ${CHOMP_APPS_DIR:-$HOME/Applications}/Chomp.app\"",
+    "icon": "node build-icon.mjs"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "app.chomp.desktop",
+    "productName": "Chomp",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.mjs"
+    ],
+    "mac": {
+      "target": "dir",
+      "identity": null,
+      "icon": "build/icon.icns",
+      "category": "public.app-category.developer-tools"
+    }
+  }
+}

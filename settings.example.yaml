@@ -1,0 +1,19 @@
+# Chomp's defaults. The board's Settings page writes your own copy to settings.yaml
+# (gitignored); until then the board reads this file. Don't put personal values here.
+owner: "" # your name, as the agents address you in chats
+profile: "" # the project you work on most: a profiles/<name>.yaml (see GETTING-STARTED.md)
+account: default # the Claude account agents run as: default (~/.claude) or a claude-profiles name
+max_parallel: 4
+id_prefix: CH
+agents:
+  planner: {model: claude-opus-5-5, effort: high}
+  designer: {model: claude-opus-5-5, effort: high}
+  builder: {model: claude-opus-5-5, effort: high}
+models:
+  - {id: claude-opus-5-5, label: Opus 5.5}
+  - {id: claude-fable-5-1, label: Fable 5.1}
+  - {id: claude-sonnet-5-5, label: Sonnet 5.5}
+  - {id: claude-haiku-5-5, label: Haiku 5.5}
+companions:
+  enabled: false
+  model: claude-sonnet-5-5

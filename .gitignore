@@ -1,0 +1,22 @@
+node_modules/
+.DS_Store
+*.log
+._*
+desktop/dist/
+desktop/node_modules/
+board/tasks/
+board/trash/
+board/.companion-secret
+board/.slack.json
+board/cache/
+board/projects/
+harness/dashboard/web/node_modules/
+harness/dashboard/web/dist/
+board/cards/
+board/runs/
+# Your own settings (the board writes it); settings.example.yaml is the default
+settings.yaml
+# Your projects: each profiles/<name>.yaml is yours (start from profiles/example.yaml.template)
+profiles/*.yaml
+# publish-public.mjs: extra words the leak check refuses to publish
+.publish-deny
