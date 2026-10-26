@@ -184,11 +184,11 @@ body {
 .doc img { max-width: 100%; border-radius: var(--r-md); }
 /* The agent's chat messages: Claude-style prose, tighter than a document. */
 .doc-chat { color: var(--semantic-ink-strong); }
-.doc-chat p, .doc-chat ul, .doc-chat ol, .doc-chat pre, .doc-chat blockquote, .doc-chat table { margin: 0 0 var(--u3); }
+.doc-chat p, .doc-chat ul, .doc-chat ol, .doc-chat pre, .doc-chat blockquote, .doc-chat table { margin: 0 0 var(--u4); }
 .doc-chat > :last-child { margin-bottom: 0; }
 .doc-chat code { font-size: 14px; }
 .doc-chat ul, .doc-chat ol { padding-left: var(--u6); }
-.doc-chat li + li { margin-top: var(--u1); }
+.doc-chat li + li { margin-top: var(--u2); }
 .doc-chat h1, .doc-chat h2, .doc-chat h3 { font-size: 16px; line-height: 24px; margin: var(--u4) 0 var(--u1); }
 .doc-chat > h1:first-child, .doc-chat > h2:first-child, .doc-chat > h3:first-child { margin-top: 0; }
 .doc-full { max-width: 1600px; width: 100%; margin: 0 auto; }

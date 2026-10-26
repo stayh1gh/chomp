@@ -1,6 +1,5 @@
 // What the chat says and sends, apart from how it looks.
 
-import { timeAgo } from '@/lib/format'
 import type { ChatMessage, Column, QuestionSet, Task, TaskDetail } from '@/lib/types'
 
 /** The agent your messages reach: the column's own agent, or a human column's chat agent. */
@@ -22,14 +21,10 @@ export function openSet(detail: TaskDetail): QuestionSet | null {
   return detail.openQuestions && detail.task.status === 'needs_input' ? detail.openQuestions : null
 }
 
-/** Who said it and when, above the message. Board lines (system) have none. */
-export function messageMeta(m: ChatMessage, now = Date.now()): string | null {
-  const when = timeAgo(m.at, now)
-  if (m.kind === 'questions') return `${m.agent ?? 'agent'} asked · ${when}`
-  if (m.kind === 'answers') return `You · ${when}`
-  if (m.from === 'system') return null
-  const name = m.from === 'agent' ? m.agent ?? 'agent' : 'You'
-  return `${name} · ${when}${m.from === 'you' && m.delivered === false ? ' · not read yet' : ''}`
+/** The line above a message: only "Not read yet", on yours the agent hasn't picked up. Who and when
+    are left out; the bubble already says it's yours, and the log reads in order. */
+export function messageMeta(m: ChatMessage): string | null {
+  return m.from === 'you' && m.kind !== 'answers' && m.delivered === false ? 'Not read yet' : null
 }
 
 /** The body of a questions or answers message, as plain text. */

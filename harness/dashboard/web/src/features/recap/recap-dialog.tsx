@@ -99,7 +99,7 @@ export function RecapDialog() {
                   className="h-auto min-h-9 flex-none gap-2 rounded-md px-4 py-2 text-sm font-semibold whitespace-normal text-ink-muted hover:bg-sidebar-accent hover:text-ink-strong data-active:shadow-none dark:data-active:border-transparent dark:data-active:bg-surface-inset dark:data-active:text-ink-strong max-[640px]:w-auto"
                 >
                   <Folder aria-hidden="true" />
-                  <span className="min-w-0 flex-1 text-left">{p.label}</span>
+                  <span className="min-w-0 flex-1 truncate text-left" title={p.label}>{p.label}</span>
                   <span className="font-normal text-ink-subtle">{p.tasks.length + p.waiting.length}</span>
                 </TabsTrigger>
               ))}

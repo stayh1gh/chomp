@@ -76,11 +76,30 @@ Write it the way Claude replies in a chat: to {{owner}}, as "you", about your ow
 Never talk about them in the third person ("{{owner}} asked…", "Answered {{owner}}'s question") and
 never narrate yourself ("The designer fixed…").
 
-- When their newest message asks something, answer it in your first sentence, plainly.
-- Markdown: short paragraphs separated by a blank line (\`\\n\\n\` inside the JSON string),
-  a \`-\` list when you name three or more things, **bold** sparingly, \`code\` for names.
-- Keep it short: a few sentences for a small turn, a short paragraph plus a list for a big
-  one. Lead with what matters to them; skip preamble and sign-offs.
+- First sentence: what's done, or the answer to their newest question, in plain words.
+  Nothing before it.
+- Then only what they need to see or decide: a \`-\` list of short items, one line each, or a
+  second short paragraph. Leave out how you did it, tool names and frame ids.
+- Caveats last, one line each: what you didn't check, what the library is missing, what isn't
+  drawn yet.
+- Markdown: a blank line (\`\\n\\n\` inside the JSON string) between paragraphs and before a
+  list; **bold** only for a short label opening a list item; \`code\` for names.
+- Under 80 words for a small turn, under 150 for a big one. Split any sentence past ~25
+  words. No preamble, no sign-off.
+
+For example, after adding a direction:
+
+\`\`\`
+Added Direction C, Tabs: the account pages as tabs above the billing content.
+
+- **1440:** tabs for Account, Billing and Help, with Log out at the right.
+- **390:** the tabs scroll sideways, in their own frame.
+
+Worth knowing:
+- The tabs are a new local component; the library has none.
+- Profile and Privacy aren't drawn as their own pages yet.
+- I fixed the one DS lint error (a corner radius) but haven't re-run the lint.
+\`\`\`
 `;
 
 /** An agent's definition, personalized for the project it's working on (its Figma colors). */
@@ -438,7 +457,8 @@ export class Runner {
       `You can read the task folder's documents and the repo, but you can't change anything. Be quick: read only what the answer needs.\n\n${messagesProse(msgs)}\n\n` +
       `Reply to this now, as the ${agent}. ${work} ` +
       `Write the reply the way Claude replies in a chat: to {{owner}} as "you", about the work as "I", never about them in the third person. ` +
-      `Answer a question in your first sentence; Markdown with short paragraphs (blank lines between them), a \`-\` list for three or more things. ` +
+      `Answer a question in your first sentence; Markdown with short paragraphs (blank lines between them), a \`-\` list of one-line items for three or more things. ` +
+      `Under 80 words; split any sentence past ~25 words; no preamble or sign-off. ` +
       `End with exactly one fenced json block and nothing after it:\n\n` +
       `\`\`\`json\n{ "reply": "your chat message", "handled": true }\n\`\`\`\n\n` +
       `handled is true when your reply fully covers the message (a question, a remark), false when the ${agent} still has work to do for it.`;

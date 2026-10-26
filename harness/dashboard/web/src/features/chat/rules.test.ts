@@ -3,7 +3,6 @@ import { FLOW, task } from '@/test/fixtures'
 import type { ChatMessage, QuestionSet } from '@/lib/types'
 import { chatAgent, collectAnswers, composerPlaceholder, messageMeta, messageText, openSet, waitingTasks } from './rules'
 
-const now = Date.parse('2026-10-16T12:00:00Z')
 const at = '2026-10-16T11:55:00Z'
 const SET: QuestionSet = {
   id: 'set1',
@@ -37,12 +36,13 @@ describe('chat rules', () => {
     expect(openSet(detail('idle'))).toBeNull()
   })
 
-  it('names who said what, and when', () => {
+  it('marks only your unread messages, with no name or time', () => {
     const m = (fields: Partial<ChatMessage>): ChatMessage => ({ id: 'm', at, from: 'agent', ...fields })
-    expect(messageMeta(m({ agent: 'designer' }), now)).toBe('designer · 5m ago')
-    expect(messageMeta(m({ from: 'you', delivered: false }), now)).toBe('You · 5m ago · not read yet')
-    expect(messageMeta(m({ from: 'system' }), now)).toBeNull()
-    expect(messageMeta(m({ kind: 'questions', agent: 'planner' }), now)).toBe('planner asked · 5m ago')
+    expect(messageMeta(m({ agent: 'designer' }))).toBeNull()
+    expect(messageMeta(m({ from: 'you', delivered: false }))).toBe('Not read yet')
+    expect(messageMeta(m({ from: 'you' }))).toBeNull()
+    expect(messageMeta(m({ from: 'system' }))).toBeNull()
+    expect(messageMeta(m({ kind: 'questions', agent: 'planner' }))).toBeNull()
     expect(messageText(m({ kind: 'answers', questions: SET.questions.slice(0, 2), answers: { q1: 'Vault', q2: '' } })))
       .toBe('Which page?\n→ Vault\n\nAny notes?\n→ Use your judgment')
   })

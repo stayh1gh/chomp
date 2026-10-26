@@ -9,6 +9,18 @@ Plan ──▶ Ideation ──▶ Designing ──▶ Refinement ──▶ Devel
 planner   designer     you, in Figma  designer       builder          builder
 ```
 
+## What's new
+
+**October 26, 2026**
+
+- **A tighter board.** Text is 14px and buttons are 36px tall. Cards and lanes have less padding,
+  and lanes stop at 268px wide instead of stretching across the screen.
+- **A roomier chat.** Messages sit in a centered 720px column at 16px, with more space between
+  them. The name and date above each message are gone; "Not read yet" still marks yours.
+- **Shorter agent updates.** When an agent finishes a step, it says what's done first, lists
+  what you need to see, and puts caveats last.
+- **Daily Recap:** long project names end in "…" instead of wrapping.
+
 ## Set it up
 
 You need a Mac, [Claude Code](https://claude.com/claude-code) with a Claude subscription, a

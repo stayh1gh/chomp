@@ -36,7 +36,7 @@ export function TaskChat({ detail, board, actions }: { detail: TaskDetail; board
   )
 }
 
-/** The message log, newest at the bottom. It follows new messages while you're at the bottom, and opens there. */
+/** The message log, newest at the bottom, in a 720px column; the composer below is 40px wider each side, as in Claude. It follows new messages while you're at the bottom, and opens there. */
 function Log({ count, children }: { count: number; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   const atBottom = useRef(true)
@@ -52,9 +52,9 @@ function Log({ count, children }: { count: number; children: ReactNode }) {
         const el = e.currentTarget
         atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
       }}
-      className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-5 pb-4"
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-5 pb-4 [scrollbar-gutter:stable_both-edges]"
     >
-      <div className="mt-auto flex flex-col gap-6">{children}</div>
+      <div className="mx-auto mt-auto flex w-full max-w-180 flex-col gap-8 text-base">{children}</div>
     </div>
   )
 }
@@ -91,7 +91,7 @@ function Composer({ taskId, placeholder }: { taskId: string; placeholder: string
   }
 
   return (
-    <form onSubmit={send} className="shrink-0 px-4 pb-4">
+    <form onSubmit={send} className="mx-auto w-full max-w-208 shrink-0 px-4 pb-4">
       <div
         onClick={(e) => e.target === e.currentTarget && box.current?.focus()}
         className="flex cursor-text items-end gap-2 rounded-xl border border-border bg-input-bg p-2 hover:border-border-hover focus-within:border-ring"
