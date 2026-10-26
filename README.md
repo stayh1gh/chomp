@@ -13,13 +13,16 @@ planner   designer     you, in Figma  designer       builder          builder
 
 **October 26, 2026**
 
-- **A tighter board.** Text is 14px and buttons are 36px tall. Cards and lanes have less padding,
-  and lanes stop at 268px wide instead of stretching across the screen.
-- **A roomier chat.** Messages sit in a centered 720px column at 16px, with more space between
-  them. The name and date above each message are gone; "Not read yet" still marks yours.
-- **Shorter agent updates.** When an agent finishes a step, it says what's done first, lists
-  what you need to see, and puts caveats last.
-- **Daily Recap:** long project names end in "…" instead of wrapping.
+- **A tighter board.** More of your work fits on one screen. Text is 14px and buttons are 36px
+  tall, cards and lanes have less padding, and lanes stop at 268px wide instead of stretching
+  across wide screens.
+- **A roomier chat.** Long agent replies are easier to read. Messages sit in a centered 720px
+  column at 16px with more space between them, like Claude's chat. The name and date above
+  each message are gone; "Not read yet" still marks yours until the agent picks them up.
+- **Shorter agent updates.** You see what happened at a glance. When an agent finishes a step,
+  it says what's done first, lists what you need to see or decide, and puts caveats last.
+- **A tidier Daily Recap.** Long project names end in "…" instead of wrapping onto a second
+  line; hover one to see the full name.
 
 ## Set it up
 
