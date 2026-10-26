@@ -34,11 +34,13 @@ Claude takes it from there. It installs what's missing (it asks first), download
 `chomp` folder in your home folder, and checks what's already connected. Then it asks you:
 
 1. **Your name.** The agents use it when they talk to you.
-2. **The project's name.**
-3. **Design only, or design + code?** Design only stops once you approve the design in
+2. **Design only, or design + code?** Design only stops once you approve the design in
    Figma, and your engineers build it. Design + code also builds it and opens a draft pull
    request for your team.
-4. **Where the code is** (design + code only): a GitHub link or a folder on your Mac.
+3. **Your projects.** For design + code, you sign in to GitHub and Claude lists the projects
+   you have access to; pick every one you'll work on. For design only, just name them.
+4. **Where the code is**, only if a project isn't on that list: a GitHub link or a folder on
+   your Mac.
 5. **Your design system's Figma link.**
 6. **Which Figma file to draw in**, or "ask me each time".
 7. **Desktop, mobile, or both.**

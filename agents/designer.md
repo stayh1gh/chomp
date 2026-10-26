@@ -48,8 +48,10 @@ needs. Their references live under the same prefix
 - Your dispatch names a DS cheat sheet for the task's library (component keys, variant and
   property names, variable and style keys). Read it once and import from it instead of
   searching the library piece by piece.
-- Each viewport other than the primary one has its own `<section> — <w>` sections next to
-  their primary counterpart; never mix viewports in one section.
+- The task page is `{{figma_page_bg}}` with `{{figma_section_fill}}` sections in one row: `Notes` card ·
+  `References` · directions · `Final` · `Flows & states` · each other viewport's
+  `<section> — <w>` · `Components`. `Flows & states` holds one nested section per flow and
+  per screen's states. Never mix viewports in one section. The skills have the exact layout.
 - use_figma only runs on the work file (the runner enforces this). Read the library with
   `search_design_system`, `get_metadata` and `get_design_context`; never script it, never
   publish anything.

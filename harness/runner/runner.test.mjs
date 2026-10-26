@@ -86,24 +86,28 @@ test("pickWork: queued starts, chat on a waiting card resumes, human column edit
   assert.equal(runnerMod.pickWork([t({ column: "plan", status: "blocked", blocker: { kind: "error", at: new Date(0).toISOString() } })], flow, { undeliveredById: { x: [{}] } }).length, 0);
 });
 
-test("accountSettings: an account's own models and limit win, per agent, over the top-level ones", () => {
+test("projectSettings: a project's own models and limit win, per agent, over the top-level ones", () => {
   const settings = {
     agents: { planner: { model: "opus", effort: "high" }, builder: { model: "opus", effort: "high" } },
     companions: { model: "sonnet" },
     max_parallel: 2,
-    per_account: { work: { agents: { planner: { model: "haiku", effort: "low" } }, companion_model: "haiku", max_parallel: 4 } },
+    per_project: { app: { agents: { planner: { model: "haiku", effort: "low" } }, companion_model: "haiku", max_parallel: 4 } },
   };
-  assert.deepEqual(store.accountSettings(settings, "work"), {
+  assert.deepEqual(store.projectSettings(settings, "app"), {
     agents: { planner: { model: "haiku", effort: "low" }, builder: { model: "opus", effort: "high" } },
     companion_model: "haiku",
     max_parallel: 4,
   });
-  assert.deepEqual(store.accountSettings(settings, "home"), { agents: settings.agents, companion_model: "sonnet", max_parallel: 2 });
+  assert.deepEqual(store.projectSettings(settings, "site"), { agents: settings.agents, companion_model: "sonnet", max_parallel: 2 });
 });
 
+/** A new task, moved out of Backlog into Plan, where the planner picks it up. */
+const planTask = (fields) => store.moveTask(store.createTask(fields).id, "plan");
+
 test("store: create, move resets checklist and clears that column's session", () => {
-  const task = store.createTask({ title: "Move me", prompt: "p" });
-  assert.equal(task.column, "plan");
+  const created = store.createTask({ title: "Move me", prompt: "p" });
+  assert.deepEqual([created.column, created.status], ["backlog", "idle"], "a new task waits in Backlog");
+  const task = store.moveTask(created.id, "plan");
   assert.equal(task.status, "queued");
   store.updateTask(task.id, (x) => { x.sessions = { plan: "a", designing: "b", "designing:edit": "c" }; });
   const moved = store.moveTask(task.id, "designing");
@@ -115,7 +119,7 @@ test("store: create, move resets checklist and clears that column's session", ()
 });
 
 test("planner flow: questions → answers → resume → documents → auto-advance", async () => {
-  const task = store.createTask({ title: "Onboarding", prompt: "Design the first upload screen" });
+  const task = planTask({ title: "Onboarding", prompt: "Design the first upload screen" });
   const dir = store.taskDir(task.id);
   const { impl, calls } = fakeQuery([
     { result: { status: "needs_input", summary: "Two things first.", questions: [{ question: "Mobile only?", options: ["Yes", "No"], recommended: "Yes" }] } },
@@ -166,7 +170,7 @@ test("planner flow: questions → answers → resume → documents → auto-adva
 });
 
 test("steps tick as each document is written", async () => {
-  const task = store.createTask({ title: "Ticks", prompt: "p" });
+  const task = planTask({ title: "Ticks", prompt: "p" });
   const dir = store.taskDir(task.id);
   let seen;
   const { impl } = fakeQuery([{ tools: [["Write", { file_path: path.join(dir, "plan.md"), content: "x" }]], result: { status: "blocked", summary: "s", blocker: "need access" } }]);
@@ -182,7 +186,7 @@ test("steps tick as each document is written", async () => {
 });
 
 test("pre-flight blocks on a missing MCP server with the fix command", async () => {
-  const task = store.createTask({ title: "No mobbin", prompt: "p" });
+  const task = planTask({ title: "No mobbin", prompt: "p" });
   const { impl, calls } = fakeQuery([]);
   const runner = new runnerMod.Runner({ log: () => {}, cheatsheetImpl: NO_SHEET, queryImpl: impl, mcpStatusImpl: async () => [{ name: "plugin:figma:figma", status: "needs-auth" }] });
   runner.running = true;
@@ -195,7 +199,7 @@ test("pre-flight blocks on a missing MCP server with the fix command", async () 
 });
 
 test("a message sent mid-turn reaches the agent before the card moves on", async () => {
-  const task = store.createTask({ title: "Late note", prompt: "p" });
+  const task = planTask({ title: "Late note", prompt: "p" });
   let release;
   const gate = new Promise((r) => (release = r));
   const calls = [];
@@ -221,7 +225,7 @@ test("a message sent mid-turn reaches the agent before the card moves on", async
 });
 
 test("an expired Claude login blocks as a connection problem with the login command", async () => {
-  const task = store.createTask({ title: "Expired", prompt: "p" });
+  const task = planTask({ title: "Expired", prompt: "p" });
   const impl = () => (async function* () {
     throw new Error("Claude Code returned an error result: Failed to authenticate: OAuth session expired and could not be refreshed");
   })();
@@ -506,7 +510,7 @@ test("card IDs: sequential, never reused after a delete", () => {
 
 test("pause parks a card; start puts it back or resumes its session", () => {
   const flow = store.loadFlow();
-  const t = store.createTask({ title: "Pausable", prompt: "p" });
+  const t = planTask({ title: "Pausable", prompt: "p" });
   store.updateTask(t.id, (x) => { x.status = "working"; x.sessions = { plan: "s9" }; });
   let x = store.pauseTask(t.id);
   assert.equal(x.status, "paused");
@@ -585,7 +589,7 @@ test("pre-flight asks for the task's Figma file first, then the profile's librar
   writeFileSync(path.join(root, "profiles", "no-figma.yaml"), `name: no-figma\nlabel: No Figma\nrepo: ${repo}\nfigma:\n  library_file: TODO\n  work_file: TODO\n`);
   assert.deepEqual(runnerMod.missingFigmaFiles(store.loadProfile("no-figma")), ["library_file", "work_file"]);
   assert.deepEqual(runnerMod.missingFigmaFiles(store.loadProfile("demo")), []);
-  const task = store.createTask({ title: "No figma", prompt: "p", profile: "no-figma" });
+  const task = planTask({ title: "No figma", prompt: "p", profile: "no-figma" });
   const { impl, calls } = fakeQuery([]);
   const runner = new runnerMod.Runner({ log: () => {}, cheatsheetImpl: NO_SHEET, queryImpl: impl, mcpStatusImpl: MCP_OK });
   await runner.dispatch({ task, col: store.columnOf(store.loadFlow(), "plan"), kind: "start", agent: "planner" }, store.loadSettings(), new AbortController());
@@ -790,6 +794,19 @@ test("agents address the owner by the name in settings, never a hardcoded one", 
   }
   assert.equal(store.personalize("{{owner}} wrote", { owner: "Ana" }), "Ana wrote");
   assert.equal(store.personalize("{{owner}} wrote", { owner: "" }), "the owner wrote");
+});
+
+test("the designer gets the Figma colors from settings, else the defaults", () => {
+  const def = runnerMod.loadAgent("designer");
+  assert.doesNotMatch(def.prompt, /\{\{figma_/, "designer has an unfilled Figma color");
+  const text = "bg {{figma_page_bg}}, sections {{figma_section_fill}}";
+  assert.equal(store.personalize(text, {}), "bg #1e1e1e, sections #404040");
+  assert.equal(store.personalize(text, { figma: { page_bg: "#000000", section_fill: "#2A2A2A" } }), "bg #000000, sections #2a2a2a");
+  assert.equal(store.personalize(text, { figma: { page_bg: "black" } }), "bg #1e1e1e, sections #404040");
+  // A project's own colors win, per color, over the top-level ones; other projects keep those.
+  const settings = { figma: { section_fill: "#2a2a2a" }, per_project: { app: { figma: { page_bg: "#000000" } } } };
+  assert.equal(store.personalize(text, settings, "app"), "bg #000000, sections #2a2a2a");
+  assert.equal(store.personalize(text, settings, "site"), "bg #1e1e1e, sections #2a2a2a");
 });
 
 test("with no settings.yaml the board reads settings.example.yaml; saving writes settings.yaml", () => {

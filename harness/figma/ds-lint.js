@@ -214,7 +214,9 @@ if (VIEWPORTS.length > 1) {
   const rootIds = new Set(roots.map((n) => n.id));
   for (const s of sections.filter((x) => rootIds.has(x.id) && FULL_PAGE.test(groupOf(x.name).base))) {
     const own = groupOf(s.name).w;
-    const tops = s.children.flatMap((c) => (c.type === "FRAME" && c.layoutMode && c.layoutMode !== "NONE" && !VIEWPORTS.some((v) => Math.abs(c.width - v.w) <= 1) ? c.children : [c]));
+    // Nested sections (one per flow or state row) count as part of their parent.
+    const kids = (n) => n.children.flatMap((c) => (c.type === "SECTION" ? kids(c) : [c]));
+    const tops = kids(s).flatMap((c) => (c.type === "FRAME" && c.layoutMode && c.layoutMode !== "NONE" && !VIEWPORTS.some((v) => Math.abs(c.width - v.w) <= 1) ? c.children : [c]));
     for (const f of tops) {
       if (f.type !== "FRAME") continue;
       const v = VIEWPORTS.find((x) => Math.abs(f.width - x.w) <= 1 && f.height >= x.h - 1);

@@ -83,7 +83,8 @@ never narrate yourself ("The designer fixed…").
   one. Lead with what matters to them; skip preamble and sign-offs.
 `;
 
-export function loadAgent(name) {
+/** An agent's definition, personalized for the project it's working on (its Figma colors). */
+export function loadAgent(name, project = null) {
   const file = path.join(ROOT, "agents", `${name}.md`);
   if (!existsSync(file)) return null;
   const text = readFileSync(file, "utf8");
@@ -97,11 +98,11 @@ export function loadAgent(name) {
   });
   const def = {
     name,
-    description: store.personalize(fm.description ?? name),
+    description: store.personalize(fm.description ?? name, undefined, project),
     tools: String(fm.tools ?? "").split(",").map((t) => t.trim()).filter(Boolean),
     writes: fm.writes ?? [],
     bash: fm.bash ?? [],
-    prompt: store.personalize(m[2].trim() + skills.join("") + "\n" + TURN_CONTRACT),
+    prompt: store.personalize(m[2].trim() + skills.join("") + "\n" + TURN_CONTRACT, undefined, project),
   };
   // A session keeps the instructions it started with, so the runner only resumes one
   // whose agent definition (prompt, skills, tools, allowlists) hasn't changed since.
@@ -239,7 +240,7 @@ function messagesProse(msgs) {
 }
 
 export function buildPrompt(work, profile, msgs) {
-  return store.personalize(promptFor(work, profile, msgs));
+  return store.personalize(promptFor(work, profile, msgs), undefined, work.task.profile);
 }
 
 function promptFor(work, profile, msgs) {
@@ -442,7 +443,7 @@ export class Runner {
       `\`\`\`json\n{ "reply": "your chat message", "handled": true }\n\`\`\`\n\n` +
       `handled is true when your reply fully covers the message (a question, a remark), false when the ${agent} still has work to do for it.`;
     const q = this.query({
-      prompt: store.personalize(prompt),
+      prompt: store.personalize(prompt, settings, task.profile),
       options: {
         cwd: profile.repo,
         env: envFor(task.account, { AGENTOS_ROOT: ROOT, AGENTOS_TASK: task.id }),
@@ -497,10 +498,10 @@ export class Runner {
           store.appendChat(w.task.id, { from: "system", column: w.col.id, text: `No agent works the ${w.col.title} column. Move the card to send it back to an agent.` });
           continue;
         }
-        // Each account has its own limit, so a busy account doesn't hold up another's cards.
-        const account = w.task.account;
-        const busy = tasks.filter((t) => t.account === account && this.inflight.has(t.id)).length;
-        if (busy >= store.accountSettings(settings, account).max_parallel) continue;
+        // Each project has its own limit, so a busy project doesn't hold up another's cards.
+        const project = w.task.profile;
+        const busy = tasks.filter((t) => t.profile === project && this.inflight.has(t.id)).length;
+        if (busy >= store.projectSettings(settings, project).max_parallel) continue;
         const ctrl = new AbortController();
         this.inflight.set(w.task.id, ctrl);
         this.dispatch(w, settings, ctrl)
@@ -575,7 +576,7 @@ export class Runner {
   async dispatch(w, settings, ctrl) {
     const { task, col } = w;
     const profile = store.resolveProfile(store.loadProfile(task.profile), task);
-    const agentDef = loadAgent(w.agent);
+    const agentDef = loadAgent(w.agent, task.profile);
     if (!(await this.preflight(w, agentDef, profile))) return;
     if (!existsSync(profile.repo)) {
       this.block(task.id, { kind: "error", title: "The bound repo is missing", detail: `${profile.repo} doesn't exist — fix profiles/${task.profile}.yaml.` });
@@ -618,7 +619,7 @@ export class Runner {
     });
     if (msgs.length) store.markDelivered(task.id, msgs.map((m) => m.id));
 
-    const agentCfg = store.accountSettings(settings, task.account).agents[w.agent] ?? {};
+    const agentCfg = store.projectSettings(settings, task.profile).agents[w.agent] ?? {};
     const taskDir = store.taskDir(task.id);
     const guardCtx = {
       tools: agentDef.tools,
@@ -702,7 +703,7 @@ export class Runner {
     };
 
     const q = this.query({
-      prompt: store.personalize(prompt),
+      prompt: store.personalize(prompt, undefined, task.profile),
       options: {
         cwd,
         env: envFor(task.account, { AGENTOS_ROOT: ROOT, AGENTOS_TASK: task.id }),

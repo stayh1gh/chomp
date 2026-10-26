@@ -11,6 +11,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:brightness-110",
+        // The board header's New task: light on the dark panel, so the brand stays for the Column select.
+        inverse: "bg-ink-strong text-surface hover:brightness-110",
         outline:
           "border-border bg-secondary text-ink-strong hover:border-border-hover hover:bg-[var(--semantic-bg-secondary-default-hovered)] aria-expanded:bg-[var(--semantic-bg-secondary-default-hovered)]",
         secondary:
@@ -23,16 +25,17 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+          "h-9 gap-2 px-3 text-sm has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         xs: "h-6 gap-1 rounded-sm px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-8 gap-1.5 px-3 text-sm has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        toolbar: "h-9 gap-2 px-3 text-sm",
         lg: "h-12 gap-2 px-5",
         icon: "size-8",
         "icon-xs":
           "size-6 rounded-sm [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":
           "size-7",
-        "icon-lg": "size-10",
+        "icon-lg": "size-9",
       },
     },
     defaultVariants: {

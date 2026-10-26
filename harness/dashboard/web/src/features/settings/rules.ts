@@ -4,9 +4,9 @@ import type { AgentConfig, Options, Settings } from '@/lib/types'
 
 export const EFFORTS = ['default', 'low', 'medium', 'high', 'xhigh', 'max']
 
-/** Same as accountSettings() in board/store.mjs: the account's own values, else the top-level ones. */
-export function accountSettings(settings: Settings, account: string) {
-  const own = settings.per_account?.[account] ?? {}
+/** Same as projectSettings() in board/store.mjs: the project's own values, else the top-level ones. */
+export function projectSettings(settings: Settings, project: string) {
+  const own = settings.per_project?.[project] ?? {}
   const agents: Record<string, AgentConfig> = {}
   for (const [name, cfg] of Object.entries(settings.agents ?? {})) agents[name] = { ...cfg, ...own.agents?.[name] }
   return {
@@ -24,19 +24,33 @@ export function modelOptions(settings: Settings, id: string): Option[] {
   return models.some((m) => m.value === id) ? models : [{ value: id, label: `${id} (not in the list)` }, ...models]
 }
 
-/**
- * The account tabs: the named claude-profiles, plus plain ~/.claude ("default") when the board runs
- * as it or there's nothing else. The tab you picked, else the account the board runs as, else the first.
- */
-export function settingsAccounts(options: Options | null, settings: Settings, picked: string | null) {
-  const all = options?.accounts ?? []
-  const named = all.filter((a) => a !== 'default')
-  const accounts = all.includes('default') && (settings.account === 'default' || !named.length) ? ['default', ...named] : named
-  const account = picked && accounts.includes(picked) ? picked : accounts.includes(settings.account) ? settings.account : accounts[0] ?? null
-  return { accounts, account }
+/** The project tabs: every profile. The tab you picked, else the project new tasks start in, else the first. */
+export function settingsProjects(options: Options | null, settings: Settings, picked: string | null) {
+  const projects = options?.profiles ?? []
+  const names = projects.map((p) => p.name)
+  const project = picked && names.includes(picked) ? picked : settings.profile && names.includes(settings.profile) ? settings.profile : names[0] ?? null
+  return { projects, project }
 }
 
-export const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
+/** Same as figmaColors() in board/store.mjs. */
+export const FIGMA_DEFAULTS = { page_bg: '#1e1e1e', section_fill: '#404040' }
+
+/** A typed color as #rrggbb ("1E1E1E", "#abc" and " #1e1e1e " all work), or null if it isn't one. */
+export function hexColor(input: string): string | null {
+  const v = input.trim().replace(/^#/, '').toLowerCase()
+  if (/^[0-9a-f]{3}$/.test(v)) return `#${[...v].map((c) => c + c).join('')}`
+  return /^[0-9a-f]{6}$/.test(v) ? `#${v}` : null
+}
+
+export function figmaColors(settings: Settings, project: string | null = null) {
+  const own = { ...settings.figma, ...(project ? settings.per_project?.[project]?.figma : undefined) }
+  return {
+    page_bg: hexColor(own.page_bg ?? '') ?? FIGMA_DEFAULTS.page_bg,
+    section_fill: hexColor(own.section_fill ?? '') ?? FIGMA_DEFAULTS.section_fill,
+  }
+}
+
+export const capitalize =(s: string) => s[0].toUpperCase() + s.slice(1)
 
 /** The line under Slack in Notifications. */
 export function slackNote(s: { loading?: boolean; configured?: boolean; connected?: boolean; team?: string; user_id?: string; error?: string }): string {

@@ -1,4 +1,5 @@
-// The task panel's two confirmed actions. Both are hard to take back, so both ask first.
+// The task panel's two actions that are hard to take back. Opening the PR asks in a dialog;
+// deleting asks in place, in the panel (doc-tabs.tsx), before it calls deleteTask.
 
 import type { ConfirmOptions } from '@/components/confirm'
 import type { Task } from '@/lib/types'
@@ -38,15 +39,7 @@ export async function openPr({ api, confirm, notify, refresh }: Deps, task: Task
   await refresh()
 }
 
-export async function removeTask({ api, confirm, notify, navigate }: Deps, task: Task) {
-  const note = deleteNote(task)
-  const yes = await confirm({
-    title: `Delete "${task.title}"?`,
-    description: `Any agent working on it stops, and it leaves the board.${note ? ` ${note}` : ''}`,
-    action: 'Delete task',
-    destructive: true,
-  })
-  if (!yes) return
+export async function deleteTask({ api, notify, navigate }: Pick<Deps, 'api' | 'notify' | 'navigate'>, task: Task) {
   try {
     await api(`/api/tasks/${task.id}/delete`, {})
     notify.info('Task deleted')

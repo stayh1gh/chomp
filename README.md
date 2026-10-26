@@ -87,8 +87,9 @@ See `AGENTS.md` for the rules agents work under and `CONTEXT.md` for the vocabul
 ## Settings
 
 **You** sets your name (agents address you by it: prompts say `{{owner}}`), the Claude account
-agents run as, and the project new tasks start in. Per account: how many agents run at once,
-and each agent's model (exact versions — Opus 5.5 by default) and effort. A task can be deleted from its panel;
+agents run as, and the project new tasks start in. Per project (a tab each): how many agents run
+at once, each agent's model (exact versions — Opus 5.5 by default) and effort, the assistant's
+model, and the Figma task page's colors. A task can be deleted from its panel;
 it moves to `board/trash`, and its Figma page, branch and PR are left alone.
 
 ## Phone chats

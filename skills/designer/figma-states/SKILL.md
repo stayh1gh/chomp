@@ -25,19 +25,25 @@ Clone frames from `Final` into `Final — <w>` and `Flows & states` and change t
 only edits outside your sections are the cleanup below: moving local components out and
 deleting the directions {{owner}} didn't pick.
 
-**Page layout.** The page reads, left to right: `References` · the directions · `Final` ·
-`Final — <w>` · `Flows & states` · `Flows & states — <w>` · `Components` · `Notes`, with
-one `— <w>` section per viewport other than the primary one (your dispatch's Viewports
-line), right after its primary counterpart. Add any that's missing (an older page), moving
-the sections after it to the right.
+**Page layout.** The page background is `{{figma_page_bg}}`, every section's fill `{{figma_section_fill}}` (a section
+nested in another: white at 6% opacity). One row, left to right, tops aligned at `y = 0`,
+200 apart:
+
+`Notes` card · `References` · the directions · `Final` · `Flows & states` · `Final — <w>` ·
+`Flows & states — <w>` · `Components`
+
+with a `Final — <w>` and a `Flows & states — <w>` per viewport other than the primary one
+(your dispatch's Viewports line). Add any section that's missing and fix an older page's
+order and colors, moving whole sections only, never what's inside them. After deleting
+directions or growing a section, move the ones to its right so the 200 gaps stay.
 
 ## 1. Clean up the page
 
 Before building anything, in this order (move components before deleting sections, so
 nothing in `Final` loses its main component):
 
-1. **Gather the components.** Add a `Components` section between the last
-   `Flows & states` section and `Notes` (reuse it if it exists). Move every local component
+1. **Gather the components.** Add a `Components` section at the right end of the row
+   (reuse it if it exists). Move every local component
    and component set on the task page into it, wherever it sits now (Direction sections,
    `Final`, loose on the page): `appendChild` into the section, laid out in a row with a
    library-styled label above each. Moving a main component keeps its instances linked;
@@ -81,12 +87,20 @@ From `spec.md` (Must-have states), `plan.md` (Flow) and the screens in `Final`, 
 
 Every state is a full page, chrome included (the profile's `design_requirements` apply
 here too), cloned from `Final` (or `Final — <w>`), at **every viewport**: the primary one
-in `Flows & states`, each other one in its own `Flows & states — <w>`, with the same rows in
-the same order so the two line up. Never put a screen in another viewport's section; the
-lint warns on it and requires a full page at each viewport in both groups.
+in `Flows & states`, each other one in its own `Flows & states — <w>`, with the same nested
+sections in the same order so they line up. Never put a screen in another viewport's
+section; the lint warns on it and requires a full page at each viewport in both groups.
 
-- One horizontal auto-layout row per flow, with one frame per step, in order.
-- One row per screen for its states.
+Break each `Flows & states` section into nested SECTION nodes, stacked top to bottom, 80
+from the parent's edges and 80 apart, with the parent resized to fit:
+
+- One section per flow, named `Flow · <name>` (e.g. "Flow · Get started (main path)"):
+  its steps left to right in one horizontal auto-layout row, one frame per step, in order.
+- One section per screen for its states, named after what it shows (e.g. "Images fail to
+  load", "Hero motion — start, middle, end, reduced motion"): one horizontal auto-layout
+  row of frames.
+- The section's name is its title: no separate title text inside it. Its content sits 80
+  from its edges, and the section is resized to fit.
 - Above every frame, a label using library text styles:
   `<Screen> — <State>` and on a second line `Trigger: <what causes it>`.
 - Compose each state per *figma-taste* §5 (empty, loading, error, zero) and each other

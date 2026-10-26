@@ -43,25 +43,34 @@ Adapted from Chomp's `generate-ideas`, `information-architecture`, `draft-surfac
 ## 2. The task page
 
 If the dispatch names an existing Figma task page, reuse it. Otherwise create a page in
-the work file named `Chomp · <task title>`, after the last page. Lay it out as SECTION
-nodes, left to right, with clear space between them (each screen goes *inside* its
-section: child coordinates are section-relative, and the section grows to fit):
+the work file named `Chomp · <task title>`, after the last page, with its background set
+to `{{figma_page_bg}}` (`page.backgrounds`). Lay it out in one row, left to right, tops aligned at
+`y = 0`, 200 apart, as top-level SECTION nodes (each screen goes *inside* its section: child
+coordinates are section-relative, and the section grows to fit):
 
-`References` · `Direction A — <name>` · `Direction B — <name>` · (`Direction C — <name>`) ·
-`Final` · `Final — <w>` · `Flows & states` · `Flows & states — <w>` · `Notes`
+`Notes` card · `References` · `Direction A — <name>` · `Direction B — <name>` ·
+(`Direction C — <name>`) · `Final` · `Flows & states` · `Final — <w>` ·
+`Flows & states — <w>` · `Components`
 
-Each viewport other than the primary one gets its own `<section> — <w>` sections, right
-after their primary counterpart, one per non-primary viewport (`<w>` is its width). With
-a profile with 1280 primary and 390 phone viewports, that's `Final` · `Final — 390` ·
-`Flows & states` · `Flows & states — 390`. A profile with one viewport has no `— <w>`
-sections. Never mix viewports in one section: the lint reads each group together and warns
-on a screen in the wrong one.
+Each viewport other than the primary one adds a `Final — <w>` and a `Flows & states — <w>`
+section (`<w>` is its width), after the primary `Flows & states`. With 1280 primary and 390
+phone viewports, that's `Final` · `Flows & states` · `Final — 390` · `Flows & states — 390`.
+A profile with one viewport has no `— <w>` sections. `Components` is added in Refinement.
+When a section grows, move the ones to its right so the 200 gaps stay.
 
+Every top-level section's fill is `{{figma_section_fill}}`. A section nested inside another gets a white
+fill at 6% opacity instead, so it reads against its parent. Never mix viewports in one
+section: the lint reads each group together and warns on a screen in the wrong one.
+
+- `Notes` card: not a section. A white card left of `References`, titled "Notes", in
+  library text styles: a short description of the task, then numbered groups of checkbox
+  lines: the missing components, the open decisions, and the readiness checks (states
+  covered, DS colors/type/spacing/components only, copy final, AA contrast, color isn't
+  the only signal, nothing hover-only). Name its top layer `Notes`.
 - `References`: the screenshots themselves, not just links. See step 2b.
 - `Final`: leave it empty except for one library-styled line, "Move or copy the
   direction you want here — Refinement starts from this section."
-- `Final — <w>`, `Flows & states`, `Flows & states — <w>`: empty, for Refinement.
-- `Notes`: missing components and open decisions.
+- `Flows & states`, `Final — <w>`, `Flows & states — <w>`: empty, for Refinement.
 
 ## 2b. References: put the screenshots in
 

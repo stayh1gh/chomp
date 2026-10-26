@@ -66,7 +66,7 @@ export function Questions({ taskId, set }: { taskId: string; set: QuestionSet })
                   setPicked(answers)
                   if (!last) setTimeout(() => setIndex(i + 1), 180) // let the pick register before moving on
                 }}
-                className="group/option h-auto min-h-10 justify-start rounded-lg bg-secondary px-4 py-2 text-left text-base font-normal whitespace-normal text-ink-body shadow-[inset_0_0_0_1px_var(--semantic-border-strong)] hover:bg-secondary hover:text-ink-body hover:shadow-[inset_0_0_0_1px_var(--semantic-border-hover)] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-none"
+                className="group/option h-auto min-h-9 justify-start rounded-lg bg-secondary px-3 py-2 text-left text-sm font-normal whitespace-normal text-ink-body shadow-[inset_0_0_0_1px_var(--semantic-border-strong)] hover:bg-secondary hover:text-ink-body hover:shadow-[inset_0_0_0_1px_var(--semantic-border-hover)] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-none"
               >
                 <span>
                   {opt}

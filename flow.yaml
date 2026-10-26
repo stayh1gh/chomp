@@ -10,6 +10,12 @@
 #                 A step with `tool` is ticked on the agent's first call of that tool; a step
 #                 with `verify: true` is ticked when the column's `verify` check passes.
 # icon           → Lucide icon name (lucide.dev) shown before the column title on the board.
+# tone           → the icon's colour on the board: brand, warn, model, success (default: muted).
+# group          → neighbouring columns with the same group share one lane on the board, titled
+#                 from it ({ id, title, icon, tone }). Dropping a card on the lane sends it to the
+#                 lane's first column that takes it; the task's Column select still lists each one.
+# enter_label    → on a column inside a shared lane: the button the task panel shows on a ready
+#                 card in the column before it ("Create draft PR"). It moves the card here.
 # requires_mcp   → MCP servers (matched by name) the runner checks before dispatching.
 # optional_mcp   → MCP servers the column's agent uses when connected but works without
 #                 (gdrive: Google Docs/Drive links). Shown on Connections; never blocks a card.
@@ -48,8 +54,16 @@ standing_rules:
     (figma.components_index or Code Connect), never re-implementations of them.
 
 columns:
+  # New tasks wait here until you drag them to Plan.
+  - id: backlog
+    icon: loader
+    title: Backlog
+    owner: human
+
   - id: plan
     icon: compass
+    tone: warn
+    group: { id: plan, title: Plan, icon: compass, tone: warn }
     title: Plan
     owner: agent
     agent: planner
@@ -64,6 +78,8 @@ columns:
 
   - id: ideation
     icon: lightbulb
+    tone: warn
+    group: { id: plan, title: Plan, icon: compass, tone: warn }
     title: Ideation
     owner: agent
     agent: designer
@@ -80,6 +96,7 @@ columns:
 
   - id: designing
     icon: palette
+    tone: brand
     title: Designing
     owner: human
     chat_agent: designer
@@ -89,7 +106,8 @@ columns:
     viewports: primary # the owner is still picking; other viewports come in Refinement
 
   - id: refinement
-    icon: search
+    icon: paintbrush
+    tone: model
     title: Refinement
     owner: agent
     agent: designer
@@ -108,6 +126,8 @@ columns:
 
   - id: development
     icon: hammer
+    tone: brand
+    group: { id: development, title: Development, icon: hammer, tone: brand }
     title: Development
     owner: agent
     agent: builder
@@ -122,10 +142,14 @@ columns:
       - { name: Checks }
       - { name: Visual QA, file: qa.md } # screenshots of every state, for the owner's review
 
-  # The owner reviewed qa.md and moved the card here: the builder opens the draft PR. They review
-  # it on GitHub; their "Open PR for review" button on the card marks it ready.
+  # The owner reviewed qa.md and pressed "Create draft PR" in the task panel, which moves the card
+  # here: the builder opens the draft PR. They review it on GitHub; "Open PR for review" in the
+  # task panel marks it ready.
   - id: review
     icon: eye
+    tone: brand
+    group: { id: development, title: Development, icon: hammer, tone: brand }
+    enter_label: Create draft PR
     title: Draft PR
     owner: agent
     agent: builder
@@ -140,5 +164,6 @@ columns:
 
   - id: done
     icon: circle-check
+    tone: success
     title: Done
     owner: human

@@ -5,9 +5,10 @@ One rule per line, organized by pattern. Adapted to this project's actual surfac
 ## Board & columns
 
 - Columns MUST come from `flow.yaml`'s declared order — never hardcode a column list in a component.
-- A card shows its current column's checklist (`steps` in `flow.yaml`) as a row of pips, never a list of every step in the flow.
-- Column header actions (`+`, `…`) are hover-revealed (`opacity: 0` → `1` on `.column:hover` or focus-within) and MUST remain reachable by keyboard focus, not hover alone.
-- An empty column shows `column-empty` copy in `ink-disabled`, centered — never a blank lane with no message.
+- Lanes come from `flow.yaml` too: neighbouring columns with the same `group` are one lane (Plan + Ideation, Development + Draft PR). A lane's icon colour is its `tone`. Code never names a column to join it with another or to label a button (`enter_label`).
+- A lane with no cards folds into a 56px dashed rail (icon + vertical title) that still takes drops; the lanes with cards share the width. With no tasks at all, the first lane stays open and says so.
+- Lanes have no box: a header (icon, title, count, owner) over the card stack, straight on the panel.
+- A card shows exactly one button, its status. Actions on a card's next step (Create draft PR, Open PR for review) live in the task panel.
 - The board scrolls horizontally at the column level and vertically per-column card stack; the page itself never scrolls.
 
 ## Cards

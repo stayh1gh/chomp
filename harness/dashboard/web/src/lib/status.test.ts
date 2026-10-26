@@ -7,7 +7,7 @@ const status = (fields: Parameters<typeof task>[0]) => taskStatus(task(fields), 
 describe('taskStatus', () => {
   it('names a working card by what its column does', () => {
     expect(status({ id: 'a', column: 'development', status: 'working' })).toEqual({ key: 'working', label: 'Building code…' })
-    expect(status({ id: 'a', column: 'ideation', status: 'working' })).toEqual({ key: 'working', label: 'Working in Figma…' })
+    expect(status({ id: 'a', column: 'ideation', status: 'working' })).toEqual({ key: 'working', label: 'Generating ideas…' })
     expect(status({ id: 'a', column: 'unknown', status: 'working' }).label).toBe('Running…')
   })
 

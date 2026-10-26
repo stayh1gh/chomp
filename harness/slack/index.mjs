@@ -227,7 +227,7 @@ export class Slack {
       options: {
         cwd: store.taskDir(task.id),
         env: envFor(task.account, { AGENTOS_PORT: String(this.port) }),
-        model: store.accountSettings(settings, task.account).companion_model ?? DEFAULT_MODEL,
+        model: store.projectSettings(settings, task.profile).companion_model ?? DEFAULT_MODEL,
         systemPrompt: { type: "preset", preset: "claude_code", append: companionPrompt(task, { where: "slack" }) },
         // Reading the task folder and the Chomp tools; no shell, no writes.
         tools: ["Read", "Glob", "Grep"],

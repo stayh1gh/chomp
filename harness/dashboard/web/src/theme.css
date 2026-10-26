@@ -96,8 +96,6 @@
   --u8: 32px; --u10: 40px; --u12: 48px; --u16: 64px;
   --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-pill: 999px;
   --control: 40px; --control-sm: 32px;
-  /* The maximized chat's width, and the column its messages and composer keep to. */
-  --chat-panel: clamp(400px, 40vw, 720px); --chat-column: 720px;
 
   /* shadcn → Chomp semantic tokens */
   --radius: var(--r-md);
@@ -158,8 +156,8 @@ body {
   background: var(--semantic-canvas);
   color: var(--semantic-ink-body);
   font-family: var(--font-family-default);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px;
+  line-height: 20px;
   -webkit-font-smoothing: antialiased;
 }
 

@@ -1,9 +1,19 @@
 // What serve.mjs sends. Grows with each phase of PLAN-shadcn.md as pages need more fields.
 
+/** The icon colour a column or lane is drawn with (flow.yaml `tone`); absent means muted. */
+export type Tone = 'brand' | 'warn' | 'model' | 'success'
+
+/** Neighbouring columns with the same group share one lane on the board. */
+export type ColumnGroup = { id: string; title: string; icon?: string; tone?: Tone }
+
 export type Column = {
   id: string
   title: string
   icon?: string
+  tone?: Tone
+  group?: ColumnGroup
+  /** On a column in a shared lane: the button that moves a ready card here from the column before. */
+  enter_label?: string
   /** agent: the runner dispatches `agent` when a card enters; human: the card waits for you. */
   owner: 'agent' | 'human'
   agent?: string
@@ -63,7 +73,12 @@ export type TaskApp = { task: string; state: 'starting' | 'running' | 'failed' |
 export type AgentConfig = { model: string; effort: string }
 
 /** What an account sets for itself; anything missing falls back to the top level. */
-export type AccountOverrides = { agents?: Record<string, Partial<AgentConfig>>; companion_model?: string; max_parallel?: number }
+export type ProjectOverrides = {
+  agents?: Record<string, Partial<AgentConfig>>
+  companion_model?: string
+  max_parallel?: number
+  figma?: { page_bg?: string; section_fill?: string }
+}
 
 export type Settings = {
   /** Your name, as the agents address you. */
@@ -75,7 +90,9 @@ export type Settings = {
   agents?: Record<string, AgentConfig>
   models?: { id: string; label: string }[]
   max_parallel?: number
-  per_account?: Record<string, AccountOverrides>
+  /** The designer's Figma task page: its background and its sections' fill, #rrggbb. */
+  figma?: { page_bg?: string; section_fill?: string }
+  per_project?: Record<string, ProjectOverrides>
   [field: string]: unknown
 }
 

@@ -4,6 +4,7 @@ owner: "" # your name, as the agents address you in chats
 profile: "" # the project you work on most: a profiles/<name>.yaml (see GETTING-STARTED.md)
 account: default # the Claude account agents run as: default (~/.claude) or a claude-profiles name
 max_parallel: 4
+figma: {page_bg: "#1e1e1e", section_fill: "#404040"} # the designer's task page: background, section fill
 id_prefix: CH
 agents:
   planner: {model: claude-opus-5-5, effort: high}

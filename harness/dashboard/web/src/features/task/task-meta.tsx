@@ -1,132 +1,115 @@
-import { Fragment, useState, type FormEvent, type ReactNode } from 'react'
-import { GitPullRequest } from 'lucide-react'
+import { useState, type FormEvent, type ReactNode } from 'react'
+import { ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { StatusDot } from '@/components/status-dot'
 import { StatusText } from '@/components/status-text'
 import { useConfirm } from '@/components/confirm'
 import { api } from '@/lib/api'
-import { columnServes, taskStatus } from '@/lib/status'
+import { nextStep } from '@/lib/lanes'
 import { act, store, useStore } from '@/lib/store'
-import { plural } from '@/lib/format'
+import { docLabel, plural } from '@/lib/format'
 import type { Board, Task, TaskDetail } from '@/lib/types'
 import { moveTask } from '@/features/board/move'
 import { Link } from '@/features/shell/link'
-import { FigmaLogo } from './figma-logo'
 import { openPr } from './actions'
 
 const notify = { info: (t: string) => toast(t), error: (t: string) => toast.error(t) }
 const external = { target: '_blank', rel: 'noopener noreferrer' }
+const resource = 'inline-flex items-center gap-1.5 text-xs text-[var(--indigo-100)] no-underline hover:underline'
+const wideAction = 'h-8 w-full text-sm text-[var(--indigo-200)]'
 
-/** The facts about a task, two columns: label, then the value and what you can do about it. */
-export function TaskMeta({ task, detail, board }: { task: Task; detail: TaskDetail; board: Board }) {
+/** The facts about a task, then the one step it's ready for (Create draft PR, Open PR for review). */
+export function TaskFacts({ task, detail, board }: { task: Task; detail: TaskDetail; board: Board }) {
   const confirm = useConfirm()
   const { options } = useStore()
   const col = board.columns.find((c) => c.id === task.column)
-  const st = taskStatus(task, board.columns)
+  const profile = options?.profiles.find((p) => p.name === task.profile)
+  const library = task.library ? profile?.libraries.find((l) => l.id === task.library)?.label ?? task.library : null
+  const workspace = task.workspace && !task.workspace.removed ? task.workspace : null
+  const step = nextStep(task, board.columns)
   const deps = { api, confirm, notify, refresh: store.refresh, navigate: store.navigate }
 
-  // Status row: the colored status, then what you can do about it right here.
-  const statusLinks = [
-    st.key === 'working' || st.key === 'queued' ? <Button key="stop" variant="link" onClick={() => act(task.id, 'pause')}>Stop</Button> : null,
-    st.key === 'paused' ? <Button key="start" variant="link" onClick={() => act(task.id, 'start')}>Start</Button> : null,
-    detail.docs.includes('qa.md') ? <Button key="qa" variant="link" asChild><Link href={`/task/${task.id}/doc/qa.md`}>See screenshots</Link></Button> : null,
-  ].filter(Boolean)
-
-  const library = task.library
-    ? options?.profiles.find((p) => p.name === task.profile)?.libraries.find((l) => l.id === task.library)?.label ?? task.library
-    : null
-  const links = Object.entries(task.links ?? {}).filter(([k]) => !(k === 'pr' && task.pr)) // the PR has its own row once verified
-  const workspace = task.workspace && !task.workspace.removed ? task.workspace : null
+  const links: { key: string; href: string; label: string; internal?: boolean }[] = [
+    ...(task.figma_file ? [{ key: 'figma-file', href: task.figma_file.url, label: 'Figma file' }] : []),
+    ...Object.entries(task.links ?? {})
+      .filter(([k]) => !(k === 'pr' && task.pr)) // the verified PR is listed below
+      .map(([k, url]) => ({ key: k, href: url, label: k === 'pr' ? 'Pull request' : k[0].toUpperCase() + k.slice(1) })),
+    ...(task.pr ? [{ key: 'verified-pr', href: task.pr.url, label: `${task.pr.draft ? 'Draft PR' : 'PR'} #${task.pr.url.split('/').pop()}` }] : []),
+    ...(detail.docs.includes('qa.md') ? [{ key: 'qa', href: `/task/${task.id}/doc/qa.md`, label: `${docLabel('qa.md')} screenshots`, internal: true }] : []),
+  ]
 
   return (
-    <dl className="my-4 grid grid-cols-[120px_1fr] items-center gap-x-3 gap-y-2">
-      <Row label="Status">
-        <StatusText task={task} columns={board.columns} />
-        {statusLinks.map((el, i) => <Fragment key={i}><span aria-hidden="true" className="text-ink-faint">•</span>{el}</Fragment>)}
-        {task.status === 'working' && task.activity ? <span className="text-sm text-ink-muted">{task.activity}</span> : null}
-      </Row>
-      <Row label="Column">
-        <Select value={task.column} onValueChange={(id) => {
-          const target = board.columns.find((c) => c.id === id)
-          if (target) void moveTask({ api, confirm, notify, refresh: store.refresh }, task, target)
-        }}>
-          <SelectTrigger aria-label="Move to column" className="w-auto"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {board.columns.map((c) => <SelectItem key={c.id} value={c.id} disabled={!columnServes(c, task)}>{c.title}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </Row>
-      <Row label="Project">{task.profile} · {task.account}</Row>
-      {library ? <Row label="Design system">{library}</Row> : null}
-      <Row label="Type">{task.kind === 'design' ? 'Design only — ends after Refinement' : 'Full — through a draft PR'}</Row>
-      {task.pr ? (
-        <Row label="Pull request">
-          <Button variant="outline" size="sm" asChild>
-            <a href={task.pr.url} {...external}><GitPullRequest />{task.pr.draft ? 'View draft PR' : 'View PR'} #{task.pr.url.split('/').pop()}</a>
-          </Button>
-          {task.pr.draft ? <Button size="sm" onClick={() => openPr(deps, task)}>Open PR for review</Button> : null}
-        </Row>
-      ) : col?.verify === 'draft-pr' ? (
-        <Row label="Pull request">
-          <span className="text-sm text-ink-muted">
-            {task.status === 'working' ? "The builder is opening the draft PR. Its button shows here once it's up." : 'No draft PR yet.'}
-          </span>
-        </Row>
+    <section className="flex flex-col gap-4">
+      <dl className="m-0 grid grid-cols-[118px_minmax(0,1fr)] items-start gap-x-1.5 gap-y-4 text-xs">
+        <Fact label="Project">{profile?.label ?? task.profile}</Fact>
+        <Fact label="Type">{[task.kind === 'design' ? 'Design only' : 'Full', task.redesign ? 'Redesign' : null].filter(Boolean).join(' • ')}</Fact>
+        <Fact label="Status">
+          <StatusText task={task} columns={board.columns} className="font-semibold" />
+          {task.status === 'working' && task.activity ? <span className="text-ink-muted"> · {task.activity}</span> : null}
+        </Fact>
+        {library ? <Fact label="Design System">{library}</Fact> : null}
+        {workspace?.branch ? <Fact label="Branch">{workspace.branch}</Fact> : null}
+        {task.lint ? (
+          <Fact label="DS lint">
+            {task.lint.errors ? plural(task.lint.errors, 'error') : 'No errors'} · {plural(task.lint.warnings ?? 0, 'warning')}
+            {task.lint.placeholders?.length ? ` · missing: ${task.lint.placeholders.join(', ')}` : ''}
+          </Fact>
+        ) : null}
+        {!task.pr && col?.verify === 'draft-pr' ? (
+          <Fact label="Pull request">
+            <span className="text-ink-muted">{task.status === 'working' ? "The builder is opening the draft PR. It shows here once it's up." : 'No draft PR yet.'}</span>
+          </Fact>
+        ) : null}
+        {links.length ? (
+          <Fact label="Resources">
+            <span className="flex flex-col items-start gap-1.5">
+              {links.map((l) => l.internal
+                ? <Link key={l.key} href={l.href} className={resource}>{l.label}</Link>
+                : <a key={l.key} href={l.href} {...external} className={resource}>{l.label}<ExternalLink className="size-4" aria-hidden="true" /></a>)}
+            </span>
+          </Fact>
+        ) : null}
+      </dl>
+      {step ? (
+        <Button variant="outline" className={wideAction} onClick={() => void moveTask({ api, confirm, notify, refresh: store.refresh }, task, step.column)}>
+          {step.label}
+        </Button>
       ) : null}
-      {workspace ? <Row label="Branch">{workspace.branch}</Row> : null}
-      {workspace ? <Row label="Local app"><LocalApp task={task} board={board} /></Row> : null}
-      {task.lint ? (
-        <Row label="DS lint">
-          {task.lint.errors ? plural(task.lint.errors, 'error') : 'No errors'} · {plural(task.lint.warnings ?? 0, 'warning')}
-          {task.lint.placeholders?.length ? ` · missing: ${task.lint.placeholders.join(', ')}` : ''}
-        </Row>
-      ) : null}
-      {task.figma_file ? (
-        <Row label="Figma file">
-          <Button variant="outline" size="sm" asChild><a href={task.figma_file.url} {...external}><FigmaLogo />Open in Figma</a></Button>
-        </Row>
-      ) : null}
-      {task.redesign ? <Row label="Scope">Redesign of an existing screen</Row> : null}
-      {links.length ? (
-        <Row label="Links">
-          {links.map(([k, url]) => (
-            <Button key={k} variant="outline" size="sm" asChild>
-              <a href={url} {...external}>{k === 'figma' ? <FigmaLogo /> : null}{k === 'pr' ? 'Pull request' : k[0].toUpperCase() + k.slice(1)}</a>
-            </Button>
-          ))}
-        </Row>
-      ) : null}
-    </dl>
+      {task.pr?.draft ? <Button variant="outline" className={wideAction} onClick={() => openPr(deps, task)}>Open PR for review</Button> : null}
+    </section>
   )
 }
 
-function Row({ label, children }: { label: string; children: ReactNode }) {
+function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <>
-      <dt className="text-sm text-ink-subtle">{label}</dt>
-      <dd className="m-0 flex min-h-8 flex-wrap items-center gap-2 text-ink-strong">{children}</dd>
+      <dt className="text-ink-subtle">{label}</dt>
+      <dd className="m-0 min-w-0 text-ink-strong [overflow-wrap:anywhere]">{children}</dd>
     </>
   )
 }
 
 /** "Run locally": the task's build served from its worktree, one task at a time. */
-function LocalApp({ task, board }: { task: Task; board: Board }) {
+export function RunLocally({ task, board }: { task: Task; board: Board }) {
   const app = board.app
   const mine = app?.task === task.id ? app : null
-  const stop = <Button variant="link" onClick={() => act(task.id, 'app-stop')}>Stop</Button>
-  if (mine?.state === 'running') return <><Button variant="link" asChild><a href={mine.url} {...external}>Open app</a></Button>{stop}</>
-  if (mine?.state === 'starting') return <><span className="text-sm text-ink-muted">Starting… the first run installs dependencies and takes a few minutes</span>{stop}</>
-  const other = app && !mine ? board.tasks.find((t) => t.id === app.task) : null
+  const other = app && !mine && ['running', 'starting'].includes(app.state) ? board.tasks.find((t) => t.id === app.task) : null
+  const stop = <Button variant="ghost" size="sm" onClick={() => act(task.id, 'app-stop')}>Stop</Button>
+  const [tone, text, buttons]: [Parameters<typeof StatusDot>[0]['tone'], string, ReactNode] =
+    mine?.state === 'running' ? ['on', `Running at ${mine.url?.replace(/^https?:\/\//, '') ?? ''}`, <><Button variant="outline" size="sm" asChild><a href={mine.url} {...external}>Open</a></Button>{stop}</>]
+    : mine?.state === 'starting' ? ['warn', 'Starting… the first run installs dependencies and takes a few minutes', <Button variant="ghost" size="sm" onClick={() => act(task.id, 'app-stop')}>Cancel</Button>]
+    : mine?.state === 'failed' ? ['bad', mine.error ?? "The dev server didn't start", <Button variant="outline" size="sm" onClick={() => act(task.id, 'app-start')}>Retry</Button>]
+    : ['off', other ? `Not running. Starting it stops ${other.ref ?? other.title}'s app` : 'Not running', (
+      <Button variant="outline" size="sm" disabled={task.status === 'working'} onClick={() => act(task.id, 'app-start')}>Run locally</Button>
+    )]
   return (
-    <>
-      <Button variant="link" disabled={task.status === 'working'} onClick={() => act(task.id, 'app-start')}>
-        {mine?.state === 'failed' ? 'Try again' : 'Run locally'}
-      </Button>
-      {mine?.state === 'failed' ? <span className="text-sm text-ink-muted">{mine.error}</span> : null}
-      {other ? <span className="text-sm text-ink-muted">Stops {other.ref ?? other.title}'s app</span> : null}
-    </>
+    <section className="flex flex-col gap-3">
+      <h3 className="m-0 text-sm font-semibold text-ink-strong">Run locally</h3>
+      <p className="m-0 flex items-center gap-2 text-sm text-ink-body"><StatusDot tone={tone} />{text}</p>
+      <div className="flex items-center gap-2">{buttons}</div>
+    </section>
   )
 }
 

@@ -177,7 +177,7 @@ export async function startCompanion(taskId, { stop = null, settings = store.loa
   if (!task) throw new Error(`no task "${taskId}"`);
   const previous = task.companion ?? null;
   const out = await claude(task.account, spawnArgs(task, {
-    model: store.accountSettings(settings, task.account).companion_model ?? DEFAULT_MODEL,
+    model: store.projectSettings(settings, task.profile).companion_model ?? DEFAULT_MODEL,
     resume: previous?.session_id ?? null,
     message: stop ? stopMessage(task, stop) : STATUS_MESSAGE(task),
   }), { cwd: store.taskDir(task.id) });

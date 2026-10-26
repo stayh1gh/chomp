@@ -9,7 +9,8 @@ import { api } from '@/lib/api'
 import { store, useStore } from '@/lib/store'
 import type { Board, Options, SlackStatus } from '@/lib/types'
 import { SettingRow, SettingSection, SettingSelect } from './setting'
-import { EFFORTS, accountSettings, capitalize, modelOptions, settingsAccounts, slackNote } from './rules'
+import { ColorField } from './color-field'
+import { EFFORTS, capitalize, figmaColors, modelOptions, projectSettings, settingsProjects, slackNote } from './rules'
 
 async function saveSettings(patch: unknown) {
   try {
@@ -21,30 +22,31 @@ async function saveSettings(patch: unknown) {
   }
 }
 
-/** Settings, after Retool's resource pages: tabs under the title pick the Claude account, then
- * labelled cards of setting rows. Notifications apply to every account, below the tabs' panel. */
+/** Settings, after Retool's resource pages: tabs under the title pick the project, then labelled
+ * cards of setting rows. You and Notifications apply to every project, around the tabs' panel. */
 export function SettingsPage() {
-  const { board, options, settingsAccount } = useStore()
+  const { board, options, settingsProject } = useStore()
   useEffect(() => void store.loadOptions().catch((err: Error) => toast.error(err.message)), [])
   if (!board) return null
-  const { accounts, account } = settingsAccounts(options, board.settings, settingsAccount)
+  const { projects, project } = settingsProjects(options, board.settings, settingsProject)
+  const label = projects.find((p) => p.name === project)?.label ?? project
 
   return (
-    <Tabs value={account ?? ''} onValueChange={(a) => store.set({ settingsAccount: a })} className="min-h-0 flex-1 gap-0">
+    <Tabs value={project ?? ''} onValueChange={(p) => store.set({ settingsProject: p })} className="min-h-0 flex-1 gap-0">
       <header className="flex min-h-16 flex-col items-start justify-end gap-2 px-6 pt-3 shadow-[inset_0_-1px_0_var(--semantic-divider)]">
         <h1 className="m-0 text-2xl font-semibold text-ink-strong">Settings</h1>
-        <TabsList variant="page" aria-label="Claude account">
-          {accounts.map((a) => <TabsTrigger key={a} value={a}>{capitalize(a)}</TabsTrigger>)}
+        <TabsList variant="page" aria-label="Project">
+          {projects.map((p) => <TabsTrigger key={p.name} value={p.name}>{p.label}</TabsTrigger>)}
         </TabsList>
       </header>
       {options ? (
         <div className="flex-1 overflow-auto p-6">
           <You board={board} options={options} />
-          {account ? (
-            <TabsContent value={account} aria-label={account} className="text-base">
-              <AccountSettings account={account} board={board} />
+          {project ? (
+            <TabsContent value={project} aria-label={label ?? project} className="text-base">
+              <ProjectSettings project={project} label={label ?? project} board={board} />
             </TabsContent>
-          ) : <p className="m-0 text-sm text-ink-muted">No Claude accounts in ~/.local/share/claude-profiles yet.</p>}
+          ) : null}
           <Notifications board={board} />
         </div>
       ) : null}
@@ -62,7 +64,7 @@ function You({ board, options }: { board: Board; options: Options }) {
 
   return (
     <div className="mb-8 flex max-w-180 flex-col gap-8">
-      <SettingSection title="You · all accounts">
+      <SettingSection title="You · all projects">
         <SettingRow glyph="user" name="Your name" note="How the agents address you in chats and prompts." forId="owner">
           <Input
             id="owner" value={name} placeholder="e.g. Ana" autoComplete="off" className="h-8 w-56 text-sm max-[720px]:flex-1"
@@ -80,18 +82,20 @@ function You({ board, options }: { board: Board; options: Options }) {
   )
 }
 
-function AccountSettings({ account, board }: { account: string; board: Board }) {
+/** How one project's tasks run: its agents' models, how many at once, the assistant and its Figma task page. */
+function ProjectSettings({ project, label, board }: { project: string; label: string; board: Board }) {
   const s = board.settings
-  const own = accountSettings(s, account)
-  const custom = Boolean(s.per_account?.[account])
-  const saveOwn = (patch: object) => saveSettings({ per_account: { account, ...patch } })
+  const own = projectSettings(s, project)
+  const colors = figmaColors(s, project)
+  const custom = Boolean(s.per_project?.[project])
+  const saveOwn = (patch: object) => saveSettings({ per_project: { project, ...patch } })
   // An agent's line says which columns it works, and its tile borrows the first one's icon.
   const columnsOf = (name: string) => board.columns.filter((c) => c.agent === name || c.chat_agent === name)
 
   return (
     <div className="flex max-w-180 flex-col gap-8">
       <SettingSection title="Runner">
-        <SettingRow glyph="layout-grid" name="Agents at once" note={`How many of ${account}'s cards agents work on at the same time.`} forId="max_parallel">
+        <SettingRow glyph="layout-grid" name="Agents at once" note={`How many of ${label}'s cards agents work on at the same time.`} forId="max_parallel">
           <SettingSelect id="max_parallel" options={['1', '2', '3', '4']} value={String(own.max_parallel)} onChange={(v) => saveOwn({ max_parallel: Number(v) })} label="Agents at once" size="effort" />
         </SettingRow>
       </SettingSection>
@@ -107,25 +111,33 @@ function AccountSettings({ account, board }: { account: string; board: Board }) 
         })}
       </SettingSection>
       <SettingSection title="Assistant">
-        <SettingRow glyph="message-square" name="Assistant" note="Writes your phone chat or Slack messages when one of this account's tasks needs you.">
+        <SettingRow glyph="message-square" name="Assistant" note="Writes your phone chat or Slack messages when one of this project's tasks needs you.">
           <SettingSelect id="companion-model" options={modelOptions(s, own.companion_model)} value={own.companion_model} onChange={(v) => saveOwn({ companion_model: v })} label="Assistant model" size="model" />
+        </SettingRow>
+      </SettingSection>
+      <SettingSection title="Figma">
+        <SettingRow glyph="paint-bucket" name="Page background" note="The background of each task's page in Figma." forId="figma-page-bg">
+          <ColorField id="figma-page-bg" label="Page background" value={colors.page_bg} onChange={(v) => saveOwn({ figma: { page_bg: v } })} />
+        </SettingRow>
+        <SettingRow glyph="square-dashed" name="Section color" note="The fill of its sections. A section inside another gets a lighter overlay instead." forId="figma-section-fill">
+          <ColorField id="figma-section-fill" label="Section color" value={colors.section_fill} onChange={(v) => saveOwn({ figma: { section_fill: v } })} />
         </SettingRow>
       </SettingSection>
       {custom ? (
         <div className="-mt-4 flex min-h-8 items-center justify-end gap-3">
-          <Button variant="outline" size="sm" onClick={() => saveSettings({ reset_account: account })}><RotateCcw />Reset to defaults</Button>
+          <Button variant="outline" size="sm" onClick={() => saveSettings({ reset_project: project })}><RotateCcw />Reset to defaults</Button>
         </div>
       ) : null}
     </div>
   )
 }
 
-/** Notify me via, for every account: a phone chat in the Claude app, or a Slack DM (harness/slack). */
+/** Notify me via, for every project: a phone chat in the Claude app, or a Slack DM (harness/slack). */
 function Notifications({ board }: { board: Board }) {
   const via = board.settings.companions?.via ?? 'phone'
   return (
     <div className="mt-8 flex max-w-180 flex-col gap-8">
-      <SettingSection title="Notifications · all accounts">
+      <SettingSection title="Notifications · all projects">
         <SettingRow glyph="vibrate" name="Notify me via" note="When a task stops and needs you, while I'm AFK is on in the sidebar." forId="notify-via">
           <SettingSelect
             id="notify-via" label="Notify me via" size="model" value={via}

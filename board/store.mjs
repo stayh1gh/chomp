@@ -54,17 +54,36 @@ export function ownerName(settings = loadSettings()) {
   return settings.owner?.trim() || "the owner";
 }
 
-/** Prompts and agent definitions say {{owner}} where they mean the person running the board. */
-export function personalize(text, settings = loadSettings()) {
-  return text.replaceAll("{{owner}}", ownerName(settings));
+export const FIGMA_DEFAULTS = { page_bg: "#1e1e1e", section_fill: "#404040" };
+export const isHexColor = (v) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
+
+/** The task page's background and its sections' fill in Figma: the project's own, else settings.figma, else the defaults. */
+export function figmaColors(settings = loadSettings(), project = null) {
+  const own = { ...settings.figma, ...settings.per_project?.[project]?.figma };
+  return {
+    page_bg: isHexColor(own.page_bg) ? own.page_bg.toLowerCase() : FIGMA_DEFAULTS.page_bg,
+    section_fill: isHexColor(own.section_fill) ? own.section_fill.toLowerCase() : FIGMA_DEFAULTS.section_fill,
+  };
 }
 
 /**
- * How an account runs: its own `per_account` entry, falling back to the top-level `agents`,
- * `companions.model` and `max_parallel` for anything that account hasn't set.
+ * Prompts and agent definitions say {{owner}} where they mean the person running the board,
+ * and {{figma_page_bg}} / {{figma_section_fill}} for the project's Figma colors in Settings.
  */
-export function accountSettings(settings, account) {
-  const own = settings.per_account?.[account] ?? {};
+export function personalize(text, settings = loadSettings(), project = null) {
+  const figma = figmaColors(settings, project);
+  return text
+    .replaceAll("{{owner}}", ownerName(settings))
+    .replaceAll("{{figma_page_bg}}", figma.page_bg)
+    .replaceAll("{{figma_section_fill}}", figma.section_fill);
+}
+
+/**
+ * How a project runs: its own `per_project` entry, falling back to the top-level `agents`,
+ * `companions.model` and `max_parallel` for anything that project hasn't set.
+ */
+export function projectSettings(settings, project) {
+  const own = settings.per_project?.[project] ?? {};
   const agents = {};
   for (const [name, cfg] of Object.entries(settings.agents ?? {})) agents[name] = { ...cfg, ...own.agents?.[name] };
   return {

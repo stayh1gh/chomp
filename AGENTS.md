@@ -8,14 +8,16 @@ binds it to one project; new ones start from `profiles/example.yaml.template`
 ## The flow (`flow.yaml`)
 
 ```
-Plan ──auto──▶ Ideation ──auto──▶ Designing ──you──▶ Refinement ──you──▶ Development ──you──▶ Draft PR ──you──▶ Done
-planner        designer           you, in Figma      designer             builder                builder
+Backlog ──you──▶ Plan ──auto──▶ Ideation ──auto──▶ Designing ──you──▶ Refinement ──you──▶ Development ──you──▶ Draft PR ──you──▶ Done
+you              planner        designer           you, in Figma      designer             builder                builder
 ```
 
+- A new task waits in Backlog until the owner drags it to Plan.
 - Entering an agent column starts that column's agent. Plan and Ideation hand off on their
   own; Refinement, Development and Draft PR stop at **Ready** and wait for the owner.
 - Development builds and ends with `qa.md` (screenshots of every state) and no PR. The owner
-  reviews it, then moves the card to Draft PR, where the builder opens the draft PR.
+  reviews it, then presses "Create draft PR" in the task panel, which moves the card to Draft
+  PR, where the builder opens the draft PR.
 - Only the owner moves a card out of Designing, Refinement, Development, Draft PR or Done — agents and
   any session driving Chomp stop there, even on test tasks. They alone open a PR for review
   (the task panel's "Open PR for review") or deletes a task (to `board/trash`).

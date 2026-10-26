@@ -21,7 +21,7 @@ before(async () => {
   store = await import("../../board/store.mjs");
   companions = await import("./index.mjs");
   mcp = await import("./mcp.mjs");
-  task = store.createTask({ title: "Vault page", prompt: "Design the vault" });
+  task = store.moveTask(store.createTask({ title: "Vault page", prompt: "Design the vault" }).id, "plan");
 
   posts = [];
   board = http.createServer((req, res) => {

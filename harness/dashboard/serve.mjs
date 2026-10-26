@@ -326,27 +326,34 @@ async function handlePost(req, res, pathname) {
       if (["phone", "slack"].includes(body.companions.via)) next.companions.via = body.companions.via;
     }
     if (body.max_parallel !== undefined) next.max_parallel = Math.max(1, Math.min(4, Number(body.max_parallel) || 1));
-    // { account, agents?: { planner: { model, effort } }, companion_model?, max_parallel? } → that account's
-    // full set under per_account, so later changes to the fallback don't move it.
-    if (body.per_account) {
-      const { account } = body.per_account;
-      if (!accounts().includes(account)) return send(res, 400, { error: "unknown account" });
+    // { project, agents?: { planner: { model, effort } }, companion_model?, max_parallel?, figma?: { page_bg?, section_fill? } }
+    // → that project's full set under per_project, so later changes to the fallback don't move it.
+    if (body.per_project) {
+      const { project } = body.per_project;
+      if (!profiles().includes(project)) return send(res, 400, { error: "unknown project" });
       const known = (current.models ?? []).map((m) => m.id);
-      const own = store.accountSettings(current, account);
-      for (const [name, cfg] of Object.entries(body.per_account.agents ?? {})) {
+      const own = { ...store.projectSettings(current, project), figma: store.figmaColors(current, project) };
+      for (const [name, cfg] of Object.entries(body.per_project.agents ?? {})) {
         if (!own.agents[name]) continue;
         const model = known.includes(cfg.model) ? cfg.model : own.agents[name].model;
         const effort = ["default", "low", "medium", "high", "xhigh", "max"].includes(cfg.effort) ? cfg.effort : own.agents[name].effort;
         own.agents[name] = { model, effort };
       }
-      if (known.includes(body.per_account.companion_model)) own.companion_model = body.per_account.companion_model;
-      if (body.per_account.max_parallel !== undefined) own.max_parallel = Math.max(1, Math.min(4, Number(body.per_account.max_parallel) || 1));
-      next.per_account = { ...current.per_account, [account]: own };
+      if (known.includes(body.per_project.companion_model)) own.companion_model = body.per_project.companion_model;
+      if (body.per_project.max_parallel !== undefined) own.max_parallel = Math.max(1, Math.min(4, Number(body.per_project.max_parallel) || 1));
+      // #rrggbb each.
+      for (const key of ["page_bg", "section_fill"]) {
+        const v = body.per_project.figma?.[key];
+        if (v === undefined) continue;
+        if (!store.isHexColor(v)) return send(res, 400, { error: `${key} must be a #rrggbb color` });
+        own.figma[key] = v.toLowerCase();
+      }
+      next.per_project = { ...current.per_project, [project]: own };
     }
-    if (body.reset_account !== undefined) {
-      next.per_account = { ...(next.per_account ?? current.per_account) };
-      delete next.per_account[body.reset_account];
-      if (!Object.keys(next.per_account).length) delete next.per_account;
+    if (body.reset_project !== undefined) {
+      next.per_project = { ...(next.per_project ?? current.per_project) };
+      delete next.per_project[body.reset_project];
+      if (!Object.keys(next.per_project).length) delete next.per_project;
     }
     store.saveSettings(next);
     return send(res, 200, next);

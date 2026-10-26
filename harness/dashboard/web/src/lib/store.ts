@@ -22,12 +22,16 @@ export type State = {
   newTaskOpen: boolean
   /** The daily recap dialog: opens itself on the first visit of a day, or from the sidebar. */
   recapOpen: boolean
-  /** The chat dock folded to its header. Resets when another task opens. */
+  /** The "tasks need you" dock folded to its header. */
   chatCollapsed: boolean
-  /** The chat as a full-height panel on the right instead of the corner dock (kept per browser). */
-  chatMaximized: boolean
-  /** The account tab open on Settings; null → the account the board runs as. */
-  settingsAccount: string | null
+  /** The open task as a full page instead of a panel over the board (kept per browser). */
+  taskFull: boolean
+  /** The sidebar folded to its icons (kept per browser). */
+  sidebarCollapsed: boolean
+  /** The project the board shows; null → every project (kept per browser). */
+  project: string | null
+  /** The project tab open on Settings; null → the project new tasks start in. */
+  settingsProject: string | null
   /** The account Connections shows; null → the account the board runs as. */
   connAccount: string | null
 }
@@ -61,8 +65,9 @@ type Deps = {
 export function createBoardStore({ api, notify, location, history }: Deps) {
   let state: State = {
     board: null, route: parseRoute(location.pathname), detail: null, doc: null, pageDoc: null, options: null,
-    newTaskOpen: false, recapOpen: false, chatCollapsed: false, chatMaximized: prefs.get('chatMaximized', false),
-    settingsAccount: null, connAccount: null,
+    newTaskOpen: false, recapOpen: false, chatCollapsed: false,
+    taskFull: prefs.get('taskFull', false), sidebarCollapsed: prefs.get('sidebarCollapsed', false), project: prefs.get('project', null),
+    settingsProject: null, connAccount: null,
   }
   const listeners = new Set<() => void>()
   let refreshing = false
@@ -122,7 +127,7 @@ export function createBoardStore({ api, notify, location, history }: Deps) {
     if (location.pathname !== path) history.pushState({}, '', path)
     const route = parseRoute(path)
     const changedTask = routeTaskId(route) !== routeTaskId(state.route)
-    set(changedTask ? { route, detail: null, doc: null, pageDoc: null, chatCollapsed: false } : { route })
+    set(changedTask ? { route, detail: null, doc: null, pageDoc: null } : { route })
     return refresh()
   }
 
@@ -163,9 +168,10 @@ export function createBoardStore({ api, notify, location, history }: Deps) {
     getState: () => state,
     loadOptions,
     openDoc,
-    setChatMaximized(on: boolean) {
-      prefs.set('chatMaximized', on)
-      set({ chatMaximized: on, chatCollapsed: false })
+    /** Set a preference kept per browser (full-page task, folded sidebar, project filter). */
+    setPref(patch: Partial<Pick<State, 'taskFull' | 'sidebarCollapsed' | 'project'>>) {
+      for (const [k, v] of Object.entries(patch)) prefs.set(k, v)
+      set(patch)
     },
     subscribe(listener: () => void) {
       listeners.add(listener)
@@ -192,10 +198,9 @@ export const store = createBoardStore({
   history: window.history,
 })
 
-/** Where the chat sits: none, the corner dock, or the full-height panel the page makes room for. */
-export function chatMode(s: State): 'none' | 'dock' | 'panel' {
-  if (s.route.page !== 'tasks' || !s.board || s.route.docName) return 'none'
-  return s.detail && s.chatMaximized ? 'panel' : 'dock'
+/** The open task shown as a full page (task list + task) in place of the board. */
+export function fullTask(s: State): boolean {
+  return s.taskFull && s.route.page === 'tasks' && Boolean(s.route.taskId) && !s.route.docName
 }
 
 export function useStore(): State {

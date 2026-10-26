@@ -1,6 +1,6 @@
 ---
 name: setup-chomp
-description: Set up Chomp on this Mac for a designer, end to end, by asking a few plain questions and doing the technical work yourself. Use when the user asks to set up, install or configure Chomp, pastes the Chomp GitHub link, wants to add another project to Chomp, or the board has no project yet.
+description: Set up Chomp on this Mac for a designer, end to end, by asking a few plain questions, letting them pick their projects from GitHub, and doing the technical work yourself. Use when the user asks to set up, install or configure Chomp, pastes the Chomp GitHub link, wants to add another project to Chomp, or the board has no project yet.
 ---
 
 # Set up Chomp
@@ -85,29 +85,57 @@ once. If they want it, the easy way is claude.ai → Settings → Connectors →
 
 ## 5. Questions
 
-Ask these one at a time.
+Ask these one at a time. They may pick several projects in question 3: each one becomes its
+own project on the board, and every new task picks one.
 
 1. **"What's your name?"** The agents address them by it.
-2. **"What's the project called?"** For example "Acme web app". Make a short lowercase id
-   from it (`acme-web`) for the file name. Don't ask for the id.
-3. **"Will Chomp only design, or also build it in code?"**
+2. **"Will Chomp only design, or also build it in code?"**
    - *Design only*: Chomp plans, researches and designs in Figma, and stops when they
      approve the design. Their engineers build it.
    - *Design + code*: after that, Chomp builds it in the project's code and opens a draft
      pull request for their team to review.
-4. **Only for design + code: "Where's the project's code? Paste its GitHub link, or tell me
-   the folder on your Mac."**
-   - Given a link: look for an existing clone first (`~/code`, `~/Developer`, `~/Projects`,
-     `~/GitHub`). If there's none, offer to clone it to `~/code/<name>`.
-   - Check `gh auth status`. If they're not signed in to GitHub, ask them to type
-     `! gh auth login` in this window and pick GitHub.com, HTTPS, and "Login with a web browser".
-     If `gh` is missing, offer `brew install gh`.
+
+   This applies to every project they pick next. If they say it differs, ask per project.
+3. **The projects.**
+   - **Design only: "What's the project called?"** For example "Acme web app". Then ask if
+     there are others.
+   - **Design + code: connect GitHub, then let them pick from their projects.**
+     1. Check `gh auth status`. If they're not signed in to GitHub, ask them to type
+        `! gh auth login` in this window and pick GitHub.com, HTTPS, and "Login with a web
+        browser". If `gh` is missing, offer `brew install gh`.
+     2. Run `node harness/setup/github-projects.mjs`. It prints every project their GitHub
+        login can reach, numbered, most recently updated first, saying which ones are read
+        only and which are already on this Mac. Ones already on the board are listed apart,
+        unnumbered: don't offer them again. Show them the list as printed (up to about 30;
+        say how many more there are).
+     3. Ask **"Which projects will you work on in Chomp?"** with `AskUserQuestion`,
+        `multiSelect: true`. The options are the top four numbered projects (label: the
+        project name; description: its description or last update). Unless there are four or
+        fewer, say in the question that they can type numbers or names from the list under
+        "Other". Then confirm the picks in one line.
+     4. A read-only project: Chomp can design for it but can't open pull requests there. Offer
+        design only for that one (`task_kinds: [design]` with the repo kept), or they ask their
+        team for write access.
+     5. A project that isn't listed, or no GitHub at all: its organization may not have
+        approved GitHub CLI yet. Ask for its GitHub link or the folder on their Mac instead.
+
+   For each project make a short lowercase id for its file name, from the project's name
+   (`acme/web-app` → `web-app`; `acme-web-app` if that's taken by another profile or pick),
+   and a readable label ("Acme · Web app"). Don't ask for either.
+4. **Only for design + code: the code.** For each project:
+   - Use the clone the list shows as on this Mac, or look for one (`~/code`, `~/Developer`,
+     `~/Projects`, `~/GitHub`). For the ones with none, ask once for all of them: "Shall I
+     download X and Y to `~/code`?", then `gh repo clone <owner/name> ~/code/<name>`.
    - Find out yourself, don't ask:
      - the main branch (`git symbolic-ref refs/remotes/origin/HEAD`);
      - how the app starts locally (`package.json` scripts, plus the lockfile for pnpm, yarn or npm);
      - the lint, typecheck and test commands;
      - where the components and tokens live;
      - any design docs (`DESIGN.md`, `AGENTS.md`, `docs/`).
+
+With several projects, ask 5 to 8 once and apply the answers to all of them, unless they
+say a project differs. For 5, ask first: "Do these projects share one design system?"
+
 5. **"Paste the Figma link to your design system library."** The agents only ever use
    its components, colors and text styles.
    - The key is the part after `figma.com/design/` in the link.
@@ -116,7 +144,7 @@ Ask these one at a time.
    - If it has several products with separate libraries, take one link per product and use
      `figma.libraries` (see the template).
 6. **"Where should Chomp draw? Paste a Figma file you can edit, or say 'ask me each time'."**
-   Chomp adds one page per task to that file. With "each time", set `work_file: TODO`, and
+   With several projects, ask per project. Chomp adds one page per task to that file. With "each time", set `work_file: TODO`, and
    every new task asks for a file.
 7. **"Which screens do you design for: desktop, mobile, or both?"** Use desktop 1440×900
    and mobile 390×844, unless the library's frames or the code's breakpoints show other
@@ -127,9 +155,10 @@ Ask these one at a time.
 
 ## 6. Learn the design system: DESIGN.md
 
-The agents read a `DESIGN.md` before every design. If the project already has one (in the
-code, or a link they give you), use it and skip this step. Otherwise write one at
-`board/projects/<id>/DESIGN.md`. Chomp keeps that folder on this Mac only.
+The agents read a `DESIGN.md` before every design. Do this per project. If the project
+already has one (in the code, or a link they give you), use it and skip this step. Otherwise
+write one at `board/projects/<id>/DESIGN.md`. Chomp keeps that folder on this Mac only.
+Projects that share a design system share one DESIGN.md: write it once.
 
 Ask once: **"Is your design system also in code, or only in Figma?"** Learn it from what exists:
 - **Figma:**
@@ -157,7 +186,7 @@ component index: the designer agent maps the library itself the first time it wo
 
 ## 7. Write the project and settings
 
-Create `profiles/<id>.yaml` from `profiles/example.yaml.template`. Fill in what you learned,
+Create `profiles/<id>.yaml` for each project from `profiles/example.yaml.template`. Fill in what you learned,
 delete the comment lines that don't apply, and leave no `TODO` (except
 `work_file: TODO` for "ask me each time").
 - **Design only:** leave out `repo`, `github`, `commands` and `app_reference`. Without a
@@ -173,8 +202,9 @@ node -e "require('js-yaml').load(require('fs').readFileSync('profiles/<id>.yaml'
 ```
 
 Then the settings. If `settings.yaml` doesn't exist, copy `settings.example.yaml` to it. Set
-`owner` to their name and `profile` to the id. Leave `account: default` unless they told
-you they use a separate claude-profile login.
+`owner` to their name and `profile` to the id. With several projects, ask which one they work
+on most (`AskUserQuestion`, one choice): new tasks start there, and they can switch per task.
+Leave `account: default` unless they told you they use a separate claude-profile login.
 
 ## 8. Start the board
 
@@ -184,7 +214,7 @@ Open <http://127.0.0.1:4400> for them.
 Check it works:
 - `curl -s http://127.0.0.1:4400/api/connections` should list `mobbin` and `figma` as
   connected. Fix anything that isn't.
-- The project shows in Settings → You.
+- Every project shows in Settings → You, and in **New task**'s Project list.
 
 Then tell them, briefly:
 - how to create a task (**New task**, describe it, attach links) and where the chat is (bottom right of a card);

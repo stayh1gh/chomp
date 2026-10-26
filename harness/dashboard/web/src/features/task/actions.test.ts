@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { task } from '@/test/fixtures'
-import { deleteNote, openPr, removeTask } from './actions'
+import { deleteNote, deleteTask, openPr } from './actions'
 
 function deps(answer: boolean) {
   return {
@@ -37,27 +37,19 @@ describe('openPr', () => {
   })
 })
 
-describe('removeTask', () => {
-  it('deletes on yes, says what it leaves, and goes back to the board', async () => {
+describe('deleteTask', () => {
+  it('deletes and goes back to the board', async () => {
     const d = deps(true)
-    await removeTask(d, task({ id: 'a', title: 'Login', pr }))
-    expect(d.confirm).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Delete "Login"?',
-      description: "Any agent working on it stops, and it leaves the board. This doesn't touch its pull request.",
-      destructive: true,
-    }))
+    await deleteTask(d, task({ id: 'a', title: 'Login', pr }))
     expect(d.api).toHaveBeenCalledWith('/api/tasks/a/delete', {})
+    expect(d.notify.info).toHaveBeenCalledWith('Task deleted')
     expect(d.navigate).toHaveBeenCalledWith('/')
   })
 
-  it('keeps the task on no, and stays put on a failure', async () => {
-    const no = deps(false)
-    await removeTask(no, task({ id: 'a' }))
-    expect(no.api).not.toHaveBeenCalled()
-
+  it('stays put on a failure', async () => {
     const fails = deps(true)
     fails.api.mockRejectedValueOnce(new Error('no such task'))
-    await removeTask(fails, task({ id: 'a' }))
+    await deleteTask(fails, task({ id: 'a' }))
     expect(fails.notify.error).toHaveBeenCalledWith('no such task')
     expect(fails.navigate).not.toHaveBeenCalled()
   })

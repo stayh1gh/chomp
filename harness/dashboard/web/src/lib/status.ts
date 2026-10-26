@@ -6,7 +6,8 @@ export type StatusKey = 'working' | 'queued' | 'paused' | 'waiting' | 'blocked' 
 
 const WORKING_LABEL: Record<string, string> = {
   plan: 'Planning…',
-  ideation: 'Working in Figma…',
+  ideation: 'Generating ideas…',
+  designing: 'Working in Figma…',
   refinement: 'Working in Figma…',
   development: 'Building code…',
   review: 'Generating PR…',

@@ -6,7 +6,7 @@ import { act, store } from '@/lib/store'
 import { STATUS_INK, taskStatus } from '@/lib/status'
 import type { Column, Task } from '@/lib/types'
 
-const shape = 'mt-1 w-full'
+const shape = 'h-9 w-full px-3 text-sm'
 
 /**
  * The status button at the bottom of every card: it names where the card stands ("Building
@@ -51,7 +51,7 @@ export function StatusButton({ task, columns }: { task: Task; columns: Column[] 
     </Button>
   ) : (
     // Not a control: the status alone. A click falls through to the card, which opens it.
-    <span className={cn('inline-flex h-10 items-center justify-center rounded-lg border px-4 text-base font-semibold', look)}>{labels}</span>
+    <span className={cn('inline-flex items-center justify-center rounded-lg border font-semibold', look)}>{labels}</span>
   )
 
   if (!activity) return button
